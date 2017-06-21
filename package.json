@@ -15,7 +15,13 @@
     "encryption",
     "storage"
   ],
-  "author": "Braydon Fuller",
+  "author": "Storj Labs, Inc.",
+  "contributors": [
+    {
+      "name": "Braydon Fuller",
+      "url": "https://github.com/braydonf"
+    }
+  ],
   "license": "LGPL-3.0",
   "bugs": {
     "url": "https://github.com/storj/node-libstorj/issues"
