@@ -3,7 +3,7 @@
     'target_name': 'libstorj',
     'include_dirs' : [
       '<!(node -e "require(\'nan\')")',
-      'libstorj-1.0.0/include',      
+      'storj.h',
     ],
     'sources': [
       'libstorj.cc',
