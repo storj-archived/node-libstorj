@@ -1,11 +1,12 @@
 {
   'targets': [{
-    'target_name': 'node-libstorj',
+    'target_name': 'libstorj',
     'include_dirs' : [
-      '<!(node -e "require(\'nan\')")'
+      '<!(node -e "require(\'nan\')")',
+      'libstorj-1.0.0/include',      
     ],
     'sources': [
-      './src/libstorj.cc',
+      'libstorj.cc',
     ],
     'conditions': [
         ['OS=="mac"', {
@@ -19,6 +20,7 @@
     ],
     'link_settings': {
       'libraries': [
+        '-lstorj'
       ],
       'ldflags': [
       ]

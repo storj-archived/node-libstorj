@@ -4,7 +4,7 @@
   "description": "Node.js bindings to libstorj C library",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/mocha test/**.js --recursive"
   },
   "repository": {
     "type": "git",
@@ -20,5 +20,12 @@
   "bugs": {
     "url": "https://github.com/storj/node-libstorj/issues"
   },
-  "homepage": "https://github.com/storj/node-libstorj#readme"
+  "homepage": "https://github.com/storj/node-libstorj#readme",
+  "dependencies": {
+    "bindings": "^1.2.1"
+  },
+  "devDependencies": {
+    "chai": "^4.0.2",
+    "mocha": "^3.4.2"
+  }
 }
