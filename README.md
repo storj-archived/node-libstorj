@@ -11,12 +11,12 @@ $ npm install -g node-gyp
 To build:
 
 ```
+$ npm install
 $ node-gyp build
 ```
 
 To test:
 
 ```
-$ npm install
 $ npm run test
 ```
