@@ -6,7 +6,7 @@ var expect = chai.expect;
 var libstorj = require('..');
 
 describe('libstorj', function() {
-  describe('#util_timestamp', function() {
+  describe('#utilTimestamp', function() {
     it('will give back timestamp', function() {
       var timestamp = libstorj.utilTimestamp();
       expect(timestamp).to.be.a('number');
@@ -15,7 +15,7 @@ describe('libstorj', function() {
     });
   });
 
-  describe('#mnemonic_check', function() {
+  describe('#mnemonicCheck', function() {
     it('should return true for a valid mnemonic', function() {
       var mnemonicCheckResult = libstorj.mnemonicCheck('abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about');
       expect(mnemonicCheckResult).to.equal(true);
@@ -37,10 +37,11 @@ describe('libstorj', function() {
     });
   });
 
-  describe('#get_info', function() {
+  describe('#getInfo', function() {
     it('should get info about the bridge', function(done) {
-      libstorj.getInfo(function(status, result) {
+      libstorj.getInfo(function(result) {
         expect(result.info.title).to.equal('Storj Bridge');
+        console.log("complete");
         done();
       });
     });

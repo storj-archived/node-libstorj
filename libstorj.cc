@@ -5,9 +5,10 @@
 #include "storj.h"
 
 using namespace v8;
+using namespace Nan;
 using namespace node;
 
-void Timestamp(const FunctionCallbackInfo<Value>& args) {
+void Timestamp(const v8::FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();
 
     uint64_t timestamp = storj_util_timestamp();
@@ -16,7 +17,7 @@ void Timestamp(const FunctionCallbackInfo<Value>& args) {
     args.GetReturnValue().Set(timestamp_local);
 }
 
-void MnemonicCheck(const FunctionCallbackInfo<Value>& args) {
+void MnemonicCheck(const v8::FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();
 
     String::Utf8Value str(args[0]);
@@ -29,28 +30,42 @@ void MnemonicCheck(const FunctionCallbackInfo<Value>& args) {
 }
 
 void GetInfoCb(uv_work_t *work_req, int status) {
+    printf("in cb\n");
     json_request_t *req = (json_request_t *) work_req->data;
 
-    FunctionCallbackInfo<Value>& args = (FunctionCallbackInfo<Value>&) *req->handle;
-    Isolate *isolate = args.GetIsolate();
+    printf("5\n");
+    v8::Persistent<v8::Object> *persistentHandle = (v8::Persistent<v8::Object>*) req->handle;
+    //v8::FunctionCallbackInfo<Value>& args = (v8::FunctionCallbackInfo<Value>&) *req->handle;
 
-    Local<Function> cb = Local<Function>::Cast(args[0]);
+    Local<Function> cb = Local<Function>::Cast(New(*persistentHandle)->Get(New("cb").ToLocalChecked()));
+    printf("6\n");
+/*    const char *result_str = json_object_to_json_string(req->response);
 
-    const char *result_str = json_object_to_json_string(req->response);
-
-    const unsigned argc = 2;
+    const unsigned argc = 1;
     Local<Value> argv[argc] = {
-      Number::New(isolate, status),
-      JSON::Parse(String::NewFromUtf8(isolate, result_str))
+      v8::JSON::Parse(String::NewFromUtf8(isolate, result_str))
     };
 
 
-    cb->Call(Null(isolate), argc, argv);
+    cb->Call(Null(isolate), argc, argv);*/
     free(req);
     free(work_req);
 }
 
-void GetInfo(const FunctionCallbackInfo<Value>& args) {
+void GetInfo(const v8::FunctionCallbackInfo<Value>& args) {
+  printf("1\n");
+  Isolate *isolate = args.GetIsolate();
+  printf("1.1\n");
+  //v8::Persistent<v8::Object> *persistentHandle;
+  printf("1.2\n");
+  v8::Local<v8::Object> obj = New<v8::Object>();
+  printf("1.3\n");
+  v8::Persistent<Object> persistentHandle = v8::Persistent<Object>::New( Isolate::GetCurrent(), *obj );
+  //persistentHandle->Reset(isolate, obj);
+  printf("1.4\n");
+  New(persistentHandle).Set(New("cb").ToLocalChecked(), args[0]);
+
+  printf("2\n");
   storj_bridge_options_t bridge_options = {
       .proto = "https",
       .host  = "api.storj.io",
@@ -80,8 +95,11 @@ void GetInfo(const FunctionCallbackInfo<Value>& args) {
                                     &http_options,
                                     &log_options);
 
-  storj_bridge_get_info(env, (void *) &args, GetInfoCb);
-  uv_run(env->loop, UV_RUN_DEFAULT);
+  printf("3\n");
+  env->loop = uv_default_loop();
+  storj_bridge_get_info(env, (void *) &persistentHandle, GetInfoCb);
+
+  printf("hello\n");
 }
 
 void init(Handle<Object> exports) {
