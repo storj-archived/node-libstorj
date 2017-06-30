@@ -39,9 +39,11 @@ describe('libstorj', function() {
 
   describe('#getInfo', function() {
     it('should get info about the bridge', function(done) {
-      libstorj.getInfo(function(result) {
+      libstorj.getInfo(function(err, result) {
+        if (err) {
+          return done(err);
+        }
         expect(result.info.title).to.equal('Storj Bridge');
-        console.log("complete");
         done();
       });
     });
