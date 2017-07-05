@@ -69,8 +69,6 @@ void GetBucketsCallback(uv_work_t *work_req, int status) {
 
     const char *result_str = json_object_to_json_string(req->response);
 
-    printf("%s\n", result_str);
-    printf("status code: %i, error code: %i\n", req->status_code, req->error_code);
     Local<Value> argv[] = {
         Nan::Null(),
         v8::JSON::Parse(Nan::New(result_str).ToLocalChecked())

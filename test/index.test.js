@@ -84,7 +84,7 @@ describe('libstorj', function() {
         if (err) {
           return done(err);
         }
-        expect(result).to.be('array');
+        expect(result).to.be.an('array');
         expect(result[0].name).to.equal('test');
         done();
       });
