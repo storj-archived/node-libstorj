@@ -89,8 +89,6 @@ describe('libstorj', function() {
         let apiBuckets = mockbridgeData.getbuckets;
         expect(result).to.be.an('array');
         for (let i=0; i<result.length; i++) {
-          console.log(result[i].created);
-          console.log(typeof result[i].created);
           expect(result[i].name).to.equal(apiBuckets[i].name);
           expect(result[i].created).to.equal(apiBuckets[i].created);
           expect(result[i].id).to.equal(apiBuckets[i].id);
