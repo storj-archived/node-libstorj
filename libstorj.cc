@@ -48,43 +48,26 @@ void GetInfoCallback(uv_work_t *work_req, int status) {
 }
 
 void GetInfo(const Nan::FunctionCallbackInfo<Value>& args) {
-  Isolate *isolate = args.GetIsolate();
+    Isolate *isolate = args.GetIsolate();
 
-  Nan::Callback *callback = new Nan::Callback(args[0].As<Function>());
+    if (args.This()->InternalFieldCount() != 1)
+    {
+        Nan::ThrowError("Environment not available for instance");
+    }
 
-  storj_bridge_options_t bridge_options = {};
-  bridge_options.proto = "https";
-  bridge_options.host  = "api.storj.io";
-  bridge_options.port  = 443;
-  bridge_options.user  = "testuser@storj.io";
-  bridge_options.pass  = "dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04";
+    storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
 
-  storj_encrypt_options_t encrypt_options = {};
-  encrypt_options.mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+    Nan::Callback *callback = new Nan::Callback(args[0].As<Function>());
 
-  storj_http_options_t http_options = {};
-  http_options.user_agent = "storj-test";
-  http_options.low_speed_limit = 0;
-  http_options.low_speed_time = 0;
-  http_options.timeout = 3;
-
-  storj_log_options_t log_options = {};
-  log_options.level = 0;
-
-  storj_env_t *env = storj_init_env(&bridge_options,
-                                    &encrypt_options,
-                                    &http_options,
-                                    &log_options);
-
-  env->loop = uv_default_loop();
-  storj_bridge_get_info(env, (void *) callback, GetInfoCallback);
+    storj_bridge_get_info(env, (void *) callback, GetInfoCallback);
 }
 
 void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::EscapableHandleScope scope;
 
     v8::Local<v8::FunctionTemplate> constructor = Nan::New<v8::FunctionTemplate>();
-    constructor->SetClassName(Nan::New("Storj").ToLocalChecked());
+    constructor->SetClassName(Nan::New("Environment").ToLocalChecked());
+    constructor->InstanceTemplate()->SetInternalFieldCount(1);
 
     Nan::SetPrototypeMethod(constructor, "getInfo", GetInfo);
 
@@ -99,6 +82,34 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     } else {
         instance = maybeInstance.ToLocalChecked();
     }
+
+    storj_bridge_options_t bridge_options = {};
+    bridge_options.proto = "https";
+    bridge_options.host  = "api.storj.io";
+    bridge_options.port  = 443;
+    bridge_options.user  = "testuser@storj.io";
+    bridge_options.pass  = "dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04";
+
+    storj_encrypt_options_t encrypt_options = {};
+    encrypt_options.mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+
+    storj_http_options_t http_options = {};
+    http_options.user_agent = "storj-test";
+    http_options.low_speed_limit = 0;
+    http_options.low_speed_time = 0;
+    http_options.timeout = 3;
+
+    storj_log_options_t log_options = {};
+    log_options.level = 0;
+
+    storj_env_t *env = storj_init_env(&bridge_options,
+                                      &encrypt_options,
+                                      &http_options,
+                                      &log_options);
+
+    env->loop = uv_default_loop();
+
+    instance->SetAlignedPointerInInternalField(0, env);
 
     args.GetReturnValue().Set(scope.Escape(instance));
 }
