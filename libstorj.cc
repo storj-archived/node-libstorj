@@ -65,6 +65,13 @@ void GetInfo(const Nan::FunctionCallbackInfo<Value>& args) {
 void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::EscapableHandleScope scope;
 
+    v8::Local<v8::Object> options = args[0].As<v8::Object>();
+
+    v8::Local<v8::String> bridgeUrl = options->Get(Nan::New("bridgeUrl").ToLocalChecked()).As<v8::String>();
+    v8::Local<v8::String> bridgeUser = options->Get(Nan::New("bridgeUser").ToLocalChecked()).As<v8::String>();
+    v8::Local<v8::String> bridgePass = options->Get(Nan::New("bridgePass").ToLocalChecked()).As<v8::String>();
+    v8::Local<v8::String> encryptionKey = options->Get(Nan::New("encryptionKey").ToLocalChecked()).As<v8::String>();
+
     v8::Local<v8::FunctionTemplate> constructor = Nan::New<v8::FunctionTemplate>();
     constructor->SetClassName(Nan::New("Environment").ToLocalChecked());
     constructor->InstanceTemplate()->SetInternalFieldCount(1);
@@ -83,32 +90,64 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
         instance = maybeInstance.ToLocalChecked();
     }
 
+    // Bridge URL handling
+
+    String::Utf8Value _bridgeUrl(bridgeUrl);
+    const char *url = *_bridgeUrl;
+    char proto[6];
+    char host[100];
+    int port = 0;
+    sscanf(url, "%5[^://]://%99[^:/]:%99d", proto, host, &port);
+    if (port == 0) {
+        if (strcmp(proto, "http") == 0) {
+            port = 80;
+        } else {
+            port = 443;
+        }
+    }
+
+    // V8 types to C types
+
+    String::Utf8Value _bridgeUser(bridgeUser);
+    const char *user = *_bridgeUser;
+    String::Utf8Value _bridgePass(bridgePass);
+    const char *pass = *_bridgePass;
+    String::Utf8Value _encryptionKey(encryptionKey);
+    const char *mnemonic = *_encryptionKey;
+
+    // Setup option structs
+
     storj_bridge_options_t bridge_options = {};
-    bridge_options.proto = "https";
-    bridge_options.host  = "api.storj.io";
-    bridge_options.port  = 443;
-    bridge_options.user  = "testuser@storj.io";
-    bridge_options.pass  = "dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04";
+    bridge_options.proto = proto;
+    bridge_options.host  = host;
+    bridge_options.port  = port;
+    bridge_options.user  = user;
+    bridge_options.pass  = pass;
 
     storj_encrypt_options_t encrypt_options = {};
-    encrypt_options.mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+    encrypt_options.mnemonic = mnemonic;
 
     storj_http_options_t http_options = {};
     http_options.user_agent = "storj-test";
-    http_options.low_speed_limit = 0;
-    http_options.low_speed_time = 0;
-    http_options.timeout = 3;
+    http_options.low_speed_limit = STORJ_LOW_SPEED_LIMIT;
+    http_options.low_speed_time = STORJ_LOW_SPEED_TIME;
+    http_options.timeout = STORJ_HTTP_TIMEOUT;
 
     storj_log_options_t log_options = {};
+    log_options.logger = NULL;
     log_options.level = 0;
+
+    // Initialize environment
 
     storj_env_t *env = storj_init_env(&bridge_options,
                                       &encrypt_options,
                                       &http_options,
                                       &log_options);
 
+    // Use Node.js default event loop that will already be running
     env->loop = uv_default_loop();
 
+    // Pass along the environment so it can be accessed by methods
     instance->SetAlignedPointerInInternalField(0, env);
 
     args.GetReturnValue().Set(scope.Escape(instance));

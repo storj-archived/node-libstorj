@@ -39,7 +39,12 @@ describe('libstorj', function() {
 
   describe('#getInfo', function() {
     it('should get info about the bridge', function(done) {
-      var env = new libstorj.Environment();
+      var env = new libstorj.Environment({
+        bridgeUrl: 'https://api.storj.io',
+        bridgeUser: 'testuser@storj.io',
+        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
+        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+      });
 
       env.getInfo(function(err, result) {
         if (err) {
