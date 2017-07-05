@@ -39,7 +39,9 @@ describe('libstorj', function() {
 
   describe('#getInfo', function() {
     it('should get info about the bridge', function(done) {
-      libstorj.getInfo(function(err, result) {
+      var env = new libstorj.Environment();
+
+      env.getInfo(function(err, result) {
         if (err) {
           return done(err);
         }

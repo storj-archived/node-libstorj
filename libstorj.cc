@@ -6,7 +6,6 @@
 
 using namespace v8;
 using namespace Nan;
-using namespace node;
 
 void Timestamp(const v8::FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();
@@ -29,7 +28,7 @@ void MnemonicCheck(const v8::FunctionCallbackInfo<Value>& args) {
     args.GetReturnValue().Set(mnemonic_check_result_local);
 }
 
-void GetInfoCb(uv_work_t *work_req, int status) {
+void GetInfoCallback(uv_work_t *work_req, int status) {
     Nan::HandleScope scope;
 
     json_request_t *req = (json_request_t *) work_req->data;
@@ -48,7 +47,7 @@ void GetInfoCb(uv_work_t *work_req, int status) {
     free(work_req);
 }
 
-void GetInfo(const v8::FunctionCallbackInfo<Value>& args) {
+void GetInfo(const Nan::FunctionCallbackInfo<Value>& args) {
   Isolate *isolate = args.GetIsolate();
 
   Nan::Callback *callback = new Nan::Callback(args[0].As<Function>());
@@ -78,13 +77,36 @@ void GetInfo(const v8::FunctionCallbackInfo<Value>& args) {
                                     &log_options);
 
   env->loop = uv_default_loop();
-  storj_bridge_get_info(env, (void *) callback, GetInfoCb);
+  storj_bridge_get_info(env, (void *) callback, GetInfoCallback);
+}
+
+void Environment(const v8::FunctionCallbackInfo<Value>& args) {
+    Nan::EscapableHandleScope scope;
+
+    v8::Local<v8::FunctionTemplate> constructor = Nan::New<v8::FunctionTemplate>();
+    constructor->SetClassName(Nan::New("Storj").ToLocalChecked());
+
+    Nan::SetPrototypeMethod(constructor, "getInfo", GetInfo);
+
+    Nan::MaybeLocal<v8::Object> maybeInstance;
+    v8::Local<v8::Object> instance;
+
+    v8::Local<v8::Value> argv[] = {};
+    maybeInstance = Nan::NewInstance(constructor->GetFunction(), 0, argv);
+
+    if (maybeInstance.IsEmpty()) {
+        Nan::ThrowError("Could not create new Storj instance");
+    } else {
+        instance = maybeInstance.ToLocalChecked();
+    }
+
+    args.GetReturnValue().Set(scope.Escape(instance));
 }
 
 void init(Handle<Object> exports) {
+    NODE_SET_METHOD(exports, "Environment", Environment);
     NODE_SET_METHOD(exports, "utilTimestamp", Timestamp);
     NODE_SET_METHOD(exports, "mnemonicCheck", MnemonicCheck);
-    NODE_SET_METHOD(exports, "getInfo", GetInfo);
 }
 
-NODE_MODULE(bitcoinconsensus, init);
+NODE_MODULE(storj, init);
