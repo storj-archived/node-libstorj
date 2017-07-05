@@ -60,6 +60,19 @@ void GetInfo(const Nan::FunctionCallbackInfo<Value>& args) {
     storj_bridge_get_info(env, (void *) callback, GetInfoCallback);
 }
 
+Local<Date> StrToDate(const char *dateStr) {
+  Local<Date> tmp = Nan::New<Date>(0).ToLocalChecked();
+  v8::Local<v8::Function> cons = v8::Local<v8::Function>::Cast(
+    Nan::Get(tmp, Nan::New("constructor").ToLocalChecked()).ToLocalChecked()
+  );
+  const int argc = 1;
+  v8::Local<v8::Value> argv[argc] = {Nan::New(dateStr).ToLocalChecked()};
+  v8::Local<v8::Date> date = v8::Local<v8::Date>::Cast(
+    Nan::NewInstance(cons, argc, argv).ToLocalChecked()
+  );
+  return date;
+}
+
 void GetBucketsCallback(uv_work_t *work_req, int status) {
     Nan::HandleScope scope;
 
@@ -70,7 +83,7 @@ void GetBucketsCallback(uv_work_t *work_req, int status) {
     for (uint8_t i=0; i<req->total_buckets; i++) {
       Local<Object> bucket = Nan::New<Object>();
       bucket->Set(Nan::New("name").ToLocalChecked(), Nan::New(req->buckets[i].name).ToLocalChecked());
-      bucket->Set(Nan::New("created").ToLocalChecked(), Nan::New(req->buckets[i].created).ToLocalChecked());
+      bucket->Set(Nan::New("created").ToLocalChecked(), StrToDate(req->buckets[i].created));
       bucket->Set(Nan::New("id").ToLocalChecked(), Nan::New(req->buckets[i].id).ToLocalChecked());
       bucket->Set(Nan::New("decrypted").ToLocalChecked(), Nan::New<Boolean>(req->buckets[i].decrypted));
       buckets->Set(i, bucket);

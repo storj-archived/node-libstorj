@@ -90,7 +90,7 @@ describe('libstorj', function() {
         expect(result).to.be.an('array');
         for (let i=0; i<result.length; i++) {
           expect(result[i].name).to.equal(apiBuckets[i].name);
-          expect(result[i].created).to.equal(apiBuckets[i].created);
+          expect(result[i].created.toISOString()).to.equal(apiBuckets[i].created);
           expect(result[i].id).to.equal(apiBuckets[i].id);
           expect(result[i].decrypted).to.equal(false);
         }
