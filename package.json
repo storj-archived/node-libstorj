@@ -4,7 +4,7 @@
   "description": "Node.js bindings to libstorj C library",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/**.js --recursive"
+    "test": "./node_modules/.bin/mocha test/**.test.js --recursive"
   },
   "repository": {
     "type": "git",
