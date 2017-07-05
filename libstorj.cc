@@ -63,7 +63,7 @@ void GetInfo(const Nan::FunctionCallbackInfo<Value>& args) {
 void GetBucketsCallback(uv_work_t *work_req, int status) {
     Nan::HandleScope scope;
 
-    json_request_t *req = (json_request_t *) work_req->data;
+    get_buckets_request_t *req = (get_buckets_request_t *) work_req->data;
 
     Nan::Callback *callback = (Nan::Callback*)req->handle;
 
