@@ -5,6 +5,7 @@ const expect = chai.expect;
 
 const libstorj = require('..');
 const mockbridge = require('./mockbridge.js');
+const mockbridgeData = require('./mockbridge.json');
 
 describe('libstorj', function() {
   let server;
@@ -84,8 +85,17 @@ describe('libstorj', function() {
         if (err) {
           return done(err);
         }
+
+        let apiBuckets = mockbridgeData.getbuckets;
         expect(result).to.be.an('array');
-        expect(result[0].name).to.equal('test');
+        for (let i=0; i<result.length; i++) {
+          console.log(result[i].created);
+          console.log(typeof result[i].created);
+          expect(result[i].name).to.equal(apiBuckets[i].name);
+          expect(result[i].created).to.equal(apiBuckets[i].created);
+          expect(result[i].id).to.equal(apiBuckets[i].id);
+          expect(result[i].decrypted).to.equal(false);
+        }
         done();
       });
     });

@@ -66,14 +66,19 @@ void GetBucketsCallback(uv_work_t *work_req, int status) {
     get_buckets_request_t *req = (get_buckets_request_t *) work_req->data;
 
     Nan::Callback *callback = (Nan::Callback*)req->handle;
-
-    const char *result_str = json_object_to_json_string(req->response);
-
+    Local<Array> buckets = Nan::New<Array>();
+    for (uint8_t i=0; i<req->total_buckets; i++) {
+      Local<Object> bucket = Nan::New<Object>();
+      bucket->Set(Nan::New("name").ToLocalChecked(), Nan::New(req->buckets[i].name).ToLocalChecked());
+      bucket->Set(Nan::New("created").ToLocalChecked(), Nan::New(req->buckets[i].created).ToLocalChecked());
+      bucket->Set(Nan::New("id").ToLocalChecked(), Nan::New(req->buckets[i].id).ToLocalChecked());
+      bucket->Set(Nan::New("decrypted").ToLocalChecked(), Nan::New<Boolean>(req->buckets[i].decrypted));
+      buckets->Set(i, bucket);
+    }
     Local<Value> argv[] = {
         Nan::Null(),
-        v8::JSON::Parse(Nan::New(result_str).ToLocalChecked())
+        buckets
     };
-
     callback->Call(2, argv);
     free(req);
     free(work_req);
