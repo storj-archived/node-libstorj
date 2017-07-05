@@ -134,6 +134,4 @@ app.delete('/frames/d4af71ab00e15b0c1a7b6ab2', function(req, res) {
   }
 });
 
-app.listen(3000, function() {
-  console.log('Test server listening on port 3000');
-});
+module.exports = app;
