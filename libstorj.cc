@@ -48,10 +48,7 @@ void GetInfoCallback(uv_work_t *work_req, int status) {
 }
 
 void GetInfo(const Nan::FunctionCallbackInfo<Value>& args) {
-    Isolate *isolate = args.GetIsolate();
-
-    if (args.This()->InternalFieldCount() != 1)
-    {
+    if (args.This()->InternalFieldCount() != 1) {
         Nan::ThrowError("Environment not available for instance");
     }
 
@@ -60,6 +57,55 @@ void GetInfo(const Nan::FunctionCallbackInfo<Value>& args) {
     Nan::Callback *callback = new Nan::Callback(args[0].As<Function>());
 
     storj_bridge_get_info(env, (void *) callback, GetInfoCallback);
+}
+
+Local<Date> StrToDate(const char *dateStr) {
+    Local<Date> tmp = Nan::New<Date>(0).ToLocalChecked();
+    v8::Local<v8::Function> cons = v8::Local<v8::Function>::Cast(
+        Nan::Get(tmp, Nan::New("constructor").ToLocalChecked()).ToLocalChecked()
+    );
+    const int argc = 1;
+    v8::Local<v8::Value> argv[argc] = {Nan::New(dateStr).ToLocalChecked()};
+    v8::Local<v8::Date> date = v8::Local<v8::Date>::Cast(
+        Nan::NewInstance(cons, argc, argv).ToLocalChecked()
+    );
+    return date;
+}
+
+void GetBucketsCallback(uv_work_t *work_req, int status) {
+    Nan::HandleScope scope;
+
+    get_buckets_request_t *req = (get_buckets_request_t *) work_req->data;
+
+    Nan::Callback *callback = (Nan::Callback*)req->handle;
+    Local<Array> buckets = Nan::New<Array>();
+    for (uint8_t i=0; i<req->total_buckets; i++) {
+        Local<Object> bucket = Nan::New<Object>();
+        bucket->Set(Nan::New("name").ToLocalChecked(), Nan::New(req->buckets[i].name).ToLocalChecked());
+        bucket->Set(Nan::New("created").ToLocalChecked(), StrToDate(req->buckets[i].created));
+        bucket->Set(Nan::New("id").ToLocalChecked(), Nan::New(req->buckets[i].id).ToLocalChecked());
+        bucket->Set(Nan::New("decrypted").ToLocalChecked(), Nan::New<Boolean>(req->buckets[i].decrypted));
+        buckets->Set(i, bucket);
+    }
+    Local<Value> argv[] = {
+        Nan::Null(),
+        buckets
+    };
+    callback->Call(2, argv);
+    free(req);
+    free(work_req);
+}
+
+void GetBuckets(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.This()->InternalFieldCount() != 1) {
+        Nan::ThrowError("Environment not available for instance");
+    }
+
+    storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+
+    Nan::Callback *callback = new Nan::Callback(args[0].As<Function>());
+
+    storj_bridge_get_buckets(env, (void *) callback, GetBucketsCallback);
 }
 
 void Environment(const v8::FunctionCallbackInfo<Value>& args) {
@@ -77,6 +123,7 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     constructor->InstanceTemplate()->SetInternalFieldCount(1);
 
     Nan::SetPrototypeMethod(constructor, "getInfo", GetInfo);
+    Nan::SetPrototypeMethod(constructor, "getBuckets", GetBuckets);
 
     Nan::MaybeLocal<v8::Object> maybeInstance;
     v8::Local<v8::Object> instance;
