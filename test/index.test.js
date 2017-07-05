@@ -1,11 +1,26 @@
 'use strict';
 
-var chai = require('chai');
-var expect = chai.expect;
+const chai = require('chai');
+const expect = chai.expect;
 
-var libstorj = require('..');
+const libstorj = require('..');
+const mockbridge = require('./mockbridge.js');
 
 describe('libstorj', function() {
+  let server;
+
+  before(function(done) {
+    server =  mockbridge.listen(3000, function() {
+      console.log('mock bridge opened on port 3000');
+      done();
+    });
+  });
+
+  after(function() {
+    server.close();
+    console.log('mock bridge closed');
+  });
+
   describe('#utilTimestamp', function() {
     it('will give back timestamp', function() {
       var timestamp = libstorj.utilTimestamp();
