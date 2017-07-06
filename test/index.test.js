@@ -114,8 +114,6 @@ describe('libstorj', function() {
           return done(err);
         }
 
-        console.log('aa');
-        console.log(JSON.stringify(result));
         expect(result.name).to.equal(newBucketName);
         done();
       });
