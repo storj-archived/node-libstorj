@@ -108,6 +108,44 @@ void GetBuckets(const Nan::FunctionCallbackInfo<Value>& args) {
     storj_bridge_get_buckets(env, (void *) callback, GetBucketsCallback);
 }
 
+void CreateBucketCallback(uv_work_t *work_req, int status) {
+    Nan::HandleScope scope;
+
+    create_bucket_request_t *req = (create_bucket_request_t *) work_req->data;
+
+    Nan::Callback *callback = (Nan::Callback*)req->handle;
+    Local<Array> buckets = Nan::New<Array>();
+
+    Local<Object> bucket = Nan::New<Object>();
+    bucket->Set(Nan::New("name").ToLocalChecked(), Nan::New(req->bucket->name).ToLocalChecked());
+    bucket->Set(Nan::New("id").ToLocalChecked(), Nan::New(req->bucket->id).ToLocalChecked());
+    bucket->Set(Nan::New("decrypted").ToLocalChecked(), Nan::New<Boolean>(req->bucket->decrypted));
+
+    Local<Value> argv[] = {
+        Nan::Null(),
+        bucket
+    };
+    callback->Call(2, argv);
+    free(req);
+    free(work_req);
+}
+
+void CreateBucket(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.This()->InternalFieldCount() != 1) {
+        Nan::ThrowError("Environment not available for instance");
+    }
+
+    storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+
+    String::Utf8Value str(args[0]);
+    const char *name = *str;
+    const char *name_dup = strdup(name);
+
+    Nan::Callback *callback = new Nan::Callback(args[1].As<Function>());
+
+    storj_bridge_create_bucket(env, name_dup, (void *) callback, CreateBucketCallback);
+}
+
 void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::EscapableHandleScope scope;
 
@@ -124,6 +162,7 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
 
     Nan::SetPrototypeMethod(constructor, "getInfo", GetInfo);
     Nan::SetPrototypeMethod(constructor, "getBuckets", GetBuckets);
+    Nan::SetPrototypeMethod(constructor, "createBucket", CreateBucket);
 
     Nan::MaybeLocal<v8::Object> maybeInstance;
     v8::Local<v8::Object> instance;

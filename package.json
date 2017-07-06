@@ -32,6 +32,7 @@
     "bindings": "^1.2.1"
   },
   "devDependencies": {
+    "body-parser": "^1.17.2",
     "chai": "^4.0.2",
     "express": "^4.15.3",
     "mocha": "^3.4.2"
