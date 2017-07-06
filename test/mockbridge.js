@@ -2,6 +2,9 @@ const mockbridge = require('./mockbridge.json');
 const mockbridgeinfo = require('./mockbridgeinfo.json');
 const express = require('express');
 const app = express();
+const bodyParser = require('body-parser');
+
+app.use(bodyParser());
 
 function checkAuth() {
   // TODO
@@ -74,7 +77,12 @@ app.post('/reports/exchanges', function(req, res) {
 app.post('/buckets', function(req, res) {
   if (checkAuth()) {
     // TODO check post body
-    res.status(200).json(mockbridge.putbuckets);
+    let response = mockbridge.putbuckets;
+    if (req.body.name) {
+      response.name = req.body.name;
+    }
+
+    res.status(200).json(response);
   }
 });
 
