@@ -139,10 +139,11 @@ void CreateBucket(const Nan::FunctionCallbackInfo<Value>& args) {
 
     String::Utf8Value str(args[0]);
     const char *name = *str;
+    const char *name_dup = strdup(name);
 
     Nan::Callback *callback = new Nan::Callback(args[1].As<Function>());
 
-    storj_bridge_create_bucket(env, name, (void *) callback, CreateBucketCallback);
+    storj_bridge_create_bucket(env, name_dup, (void *) callback, CreateBucketCallback);
 }
 
 void Environment(const v8::FunctionCallbackInfo<Value>& args) {
