@@ -79,7 +79,7 @@ Upload a file to a bucket:
 let bucketId = '368be0816766b28fd5f43af5';
 let filePath = './storj-test-upload.data';
 
-env.storeFile(bucketId, filePath, {
+storj.storeFile(bucketId, filePath, {
   filename: 'storj-test-upload.data',
   progressCallback: function(progress, downloadedBytes, totalBytes) {
     console.log('progress:', progress);
