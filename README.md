@@ -86,10 +86,9 @@ storj.storeFile(bucketId, filePath, {
   },
   finishedCallback: function(err, fileId) {
     if (err) {
-      return done(err);
+      console.error(err);
     }
     console.log('File complete:', fileId);
-    done();
   }
 });
 
