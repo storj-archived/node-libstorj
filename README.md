@@ -1,6 +1,6 @@
 # node-libstorj
 
-Node.js bindings to libstorj https://github.com/Storj/libstorj
+Node.js library for encrypted file transfer on the Storj network.
 
 ## Dependencies
 
