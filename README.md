@@ -27,3 +27,55 @@ To test:
 $ npm run test
 ```
 
+## API Examples
+
+```
+const libstorj = require('..');
+
+let storj = new libstorj.Environment({
+  bridgeUrl: 'https://api.storj.io',
+  bridgeUser: 'user@domain.com',
+  bridgePass: 'password',
+  encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+});
+
+storj.getInfo(function(err, result) {
+  if (err) {
+    console.error(err);
+  }
+  console.log('info:', result);
+});
+
+let testBucketName = 'test-' + Date.now();
+storj.createBucket(testBucketName, function(err, result) {
+  if (err) {
+    console.error(err);
+  }
+  console.log('info:', result);
+});
+
+storj.getBuckets(function(err, result) {
+  if (err) {
+    console.error(err);
+  }
+  console.log('buckets:', result);
+});
+
+let bucketId = '368be0816766b28fd5f43af5';
+let filePath = './storj-test-upload.data';
+
+env.storeFile(bucketId, filePath, {
+  filename: 'storj-test-upload.data',
+  progressCallback: function(progress, downloadedBytes, totalBytes) {
+    console.log('progress:', progress);
+  },
+  finishedCallback: function(err, fileId) {
+    if (err) {
+      return done(err);
+    }
+    console.log('File complete:', fileId);
+    done();
+  }
+});
+
+```
