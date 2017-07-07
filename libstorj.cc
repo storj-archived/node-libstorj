@@ -146,6 +146,72 @@ void CreateBucket(const Nan::FunctionCallbackInfo<Value>& args) {
     storj_bridge_create_bucket(env, name_dup, (void *) callback, CreateBucketCallback);
 }
 
+void StoreFileFinishedCallback(int status, char *file_id, void *handle) {
+    Nan::HandleScope scope;
+
+    Nan::Callback *callback = (Nan::Callback*) handle;
+
+    Local<String> file_id_local = Nan::New(file_id).ToLocalChecked();
+
+    Local<Value> argv[] = {
+        Nan::Null(),
+        file_id_local
+    };
+
+    callback->Call(2, argv);
+    free(file_id);
+}
+
+void StoreFileProgressCallback(double progress, uint64_t downloaded_bytes, uint64_t total_bytes, void *handle) {
+}
+
+void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.This()->InternalFieldCount() != 1) {
+        Nan::ThrowError("Environment not available for instance");
+    }
+
+    storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+
+    String::Utf8Value bucket_id_str(args[0]);
+    const char *bucket_id = *bucket_id_str;
+    const char *bucket_id_dup = strdup(bucket_id);
+
+    String::Utf8Value file_path_str(args[1]);
+    const char *file_path = *file_path_str;
+
+    v8::Local<v8::Object> options = args[2].As<v8::Object>();
+    Nan::Callback *progress_callback = new Nan::Callback(options->Get(Nan::New("progressCallback").ToLocalChecked()).As<Function>());
+    Nan::Callback *finished_callback = new Nan::Callback(options->Get(Nan::New("finishedCallback").ToLocalChecked()).As<Function>());
+
+    String::Utf8Value file_name_str(options->Get(Nan::New("filename").ToLocalChecked()).As<v8::String>());
+    const char *file_name = *file_name_str;
+    const char *file_name_dup = strdup(file_name_dup);
+
+    FILE *fd = fopen(file_path, "r");
+
+    // TOOD check that file is open
+
+    storj_upload_opts_t upload_opts = {
+      .prepare_frame_limit =  1,
+      .push_frame_limit =  64,
+      .push_shard_limit =  64,
+      .rs =  true,
+      .bucket_id = bucket_id_dup,
+      .file_name = file_name_dup,
+      .fd = fd
+    };
+
+    storj_upload_state_t *state = static_cast<storj_upload_state_t*>(malloc(sizeof(storj_upload_state_t)));
+    // TODO handle error
+
+    int status = storj_bridge_store_file(env,
+        state,
+        &upload_opts,
+        (void *) finished_callback,
+        StoreFileProgressCallback,
+        StoreFileFinishedCallback);
+}
+
 void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::EscapableHandleScope scope;
 
@@ -163,6 +229,7 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::SetPrototypeMethod(constructor, "getInfo", GetInfo);
     Nan::SetPrototypeMethod(constructor, "getBuckets", GetBuckets);
     Nan::SetPrototypeMethod(constructor, "createBucket", CreateBucket);
+    Nan::SetPrototypeMethod(constructor, "storeFile", StoreFile);
 
     Nan::MaybeLocal<v8::Object> maybeInstance;
     v8::Local<v8::Object> instance;

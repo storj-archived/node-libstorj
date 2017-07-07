@@ -2,7 +2,7 @@
 
 const chai = require('chai');
 const expect = chai.expect;
-
+const fs = require('fs');
 const libstorj = require('..');
 const mockbridge = require('./mockbridge.js');
 const mockbridgeData = require('./mockbridge.json');
@@ -119,4 +119,50 @@ describe('libstorj', function() {
       });
     });
   });
+
+  describe('#upload', function() {
+    it('should upload a file', function(done) {
+      let env = new libstorj.Environment({
+        bridgeUrl: 'http://localhost:3000',
+        bridgeUser: 'testuser@storj.io',
+        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
+        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+      });
+
+      let bucketId = 'testbucketid';
+      let filePath = './storj-test-upload.data';
+
+      createUploadFile(filePath);
+
+      let options = {
+        progressCallback: function(progress, downloadedBytes, totalBytes) {
+
+        },
+        finishedCallback: function(err, fileId) {
+
+        },
+        filename: 'storj-test-upload.data'
+      };
+
+      env.storeFile(bucketId, filePath, options);
+    });
+  });
 });
+
+function createUploadFile(filepath) {
+  let letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n'];
+  let shardSize = 16777216;
+
+  const out = fs.openSync(filepath, 'w');
+
+  for (let i=0; i<letters.length; i++) {
+    let nextBuf = '';
+    for (let j=0; j<shardSize; j++) {
+      nextBuf += letters[i];
+    }
+
+    fs.writeSync(out, nextBuf);
+  }
+
+  fs.closeSync(out);
+}
