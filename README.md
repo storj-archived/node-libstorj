@@ -29,7 +29,7 @@ $ npm run test
 
 ## API Examples
 
-```
+```js
 const libstorj = require('..');
 
 let storj = new libstorj.Environment({
