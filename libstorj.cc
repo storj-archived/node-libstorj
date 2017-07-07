@@ -7,6 +7,11 @@
 using namespace v8;
 using namespace Nan;
 
+typedef struct {
+    Nan::Callback *progress_callback;
+    Nan::Callback *finished_callback;
+} upload_callbacks_t;
+
 Local<Value> IntToError(int error_code) {
     if (!error_code) {
         return Nan::Null();
@@ -161,7 +166,8 @@ void CreateBucket(const Nan::FunctionCallbackInfo<Value>& args) {
 void StoreFileFinishedCallback(int status, char *file_id, void *handle) {
     Nan::HandleScope scope;
 
-    Nan::Callback *callback = (Nan::Callback*) handle;
+    upload_callbacks_t *upload_callbacks = (upload_callbacks_t *) handle;
+    Nan::Callback *callback = upload_callbacks->finished_callback;
 
     Local<Value> file_id_local = Nan::Null();
     if (status == 0) {
@@ -182,6 +188,22 @@ void StoreFileFinishedCallback(int status, char *file_id, void *handle) {
 }
 
 void StoreFileProgressCallback(double progress, uint64_t downloaded_bytes, uint64_t total_bytes, void *handle) {
+    Nan::HandleScope scope;
+
+    upload_callbacks_t *upload_callbacks = (upload_callbacks_t *) handle;
+    Nan::Callback *callback = upload_callbacks->progress_callback;
+
+    Local<Number> progress_local = Nan::New(progress);
+    Local<Number> downloaded_bytes_local = Nan::New((double)downloaded_bytes);
+    Local<Number> total_bytes_local = Nan::New((double)total_bytes);
+
+    Local<Value> argv[] = {
+        progress_local,
+        downloaded_bytes_local,
+        total_bytes_local
+    };
+
+    callback->Call(3, argv);
 }
 
 void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
@@ -199,8 +221,11 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
     const char *file_path = *file_path_str;
 
     v8::Local<v8::Object> options = args[2].As<v8::Object>();
-    Nan::Callback *progress_callback = new Nan::Callback(options->Get(Nan::New("progressCallback").ToLocalChecked()).As<Function>());
-    Nan::Callback *finished_callback = new Nan::Callback(options->Get(Nan::New("finishedCallback").ToLocalChecked()).As<Function>());
+
+    upload_callbacks_t *upload_callbacks = static_cast<upload_callbacks_t*>(malloc(sizeof(upload_callbacks_t)));
+
+    upload_callbacks->progress_callback = new Nan::Callback(options->Get(Nan::New("progressCallback").ToLocalChecked()).As<Function>());
+    upload_callbacks->finished_callback = new Nan::Callback(options->Get(Nan::New("finishedCallback").ToLocalChecked()).As<Function>());
 
     String::Utf8Value file_name_str(options->Get(Nan::New("filename").ToLocalChecked()).As<v8::String>());
     const char *file_name = *file_name_str;
@@ -220,7 +245,11 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
     upload_opts.push_shard_limit =  64;
     upload_opts.rs =  true;
     upload_opts.bucket_id = bucket_id_dup;
-    upload_opts.index = index_dup;
+    if (strlen(index_dup) == 64) {
+        upload_opts.index = index_dup;
+    } else {
+        upload_opts.index = NULL;
+    }
     upload_opts.file_name = file_name_dup;
     upload_opts.fd = fd;
 
@@ -230,7 +259,7 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
     int status = storj_bridge_store_file(env,
         state,
         &upload_opts,
-        (void *) finished_callback,
+        (void *) upload_callbacks,
         StoreFileProgressCallback,
         StoreFileFinishedCallback);
 }
