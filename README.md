@@ -27,7 +27,7 @@ To test:
 $ npm run test
 ```
 
-## API Examples
+## Example Usage
 
 ```js
 const libstorj = require('..');
