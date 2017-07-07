@@ -206,6 +206,10 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
     const char *file_name = *file_name_str;
     const char *file_name_dup = strdup(file_name);
 
+    String::Utf8Value index_str(options->Get(Nan::New("index").ToLocalChecked()).As<v8::String>());
+    const char *index = *index_str;
+    const char *index_dup = strdup(index);
+
     FILE *fd = fopen(file_path, "r");
 
     // TOOD check that file is open
@@ -216,6 +220,7 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
     upload_opts.push_shard_limit =  64;
     upload_opts.rs =  true;
     upload_opts.bucket_id = bucket_id_dup;
+    upload_opts.index = index_dup;
     upload_opts.file_name = file_name_dup;
     upload_opts.fd = fd;
 

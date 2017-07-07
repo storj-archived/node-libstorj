@@ -5,21 +5,34 @@ const expect = chai.expect;
 const fs = require('fs');
 const libstorj = require('..');
 const mockbridge = require('./mockbridge.js');
+const mockfarmer = require('./mockfarmer.js');
 const mockbridgeData = require('./mockbridge.json');
 
 describe('libstorj', function() {
   let server;
+  let farmer;
 
   before(function(done) {
-    server =  mockbridge.listen(3000, function() {
+    server = mockbridge.listen(3000, function(err) {
+      if (err) {
+        console.error(err);
+      }
       console.log('mock bridge opened on port 3000');
-      done();
+      farmer = mockfarmer.listen(8092, function(err) {
+        if (err) {
+          console.error(err);
+        }
+        console.log('mock farmer opened on port 8092');
+        done();
+      });
     });
   });
 
   after(function() {
     server.close();
+    farmer.close();
     console.log('mock bridge closed');
+    console.log('mock farmer closed');
   });
 
   describe('#utilTimestamp', function() {
@@ -135,9 +148,11 @@ describe('libstorj', function() {
 
       createUploadFile(filePath);
 
-      let options = {
+      env.storeFile(bucketId, filePath, {
+        filename: 'storj-test-upload.data',
+        index: 'd2891da46d9c3bf42ad619ceddc1b6621f83e6cb74e6b6b6bc96bdbfaefb8692',
         progressCallback: function(progress, downloadedBytes, totalBytes) {
-
+          // TODO
         },
         finishedCallback: function(err, fileId) {
           if (err) {
@@ -145,11 +160,8 @@ describe('libstorj', function() {
           }
           console.log('File complete:', fileId);
           done();
-        },
-        filename: 'storj-test-upload.data'
-      };
-
-      env.storeFile(bucketId, filePath, options);
+        }
+      });
     });
   });
 });
