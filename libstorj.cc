@@ -7,6 +7,18 @@
 using namespace v8;
 using namespace Nan;
 
+Local<Value> IntToError(int error_code) {
+    if (!error_code) {
+        return Nan::Null();
+    }
+
+    const char* error_msg = storj_strerror(error_code);
+    v8::Local<v8::String> msg = Nan::New(error_msg).ToLocalChecked();
+    v8::Local<v8::Value> error = Nan::Error(msg);
+
+    return error;
+}
+
 void Timestamp(const v8::FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();
 
@@ -151,15 +163,22 @@ void StoreFileFinishedCallback(int status, char *file_id, void *handle) {
 
     Nan::Callback *callback = (Nan::Callback*) handle;
 
-    Local<String> file_id_local = Nan::New(file_id).ToLocalChecked();
+    Local<Value> file_id_local = Nan::Null();
+    if (status == 0) {
+        file_id_local = Nan::New(file_id).ToLocalChecked();
+    }
+
+    Local<Value> error = IntToError(status);
 
     Local<Value> argv[] = {
-        Nan::Null(),
+        error,
         file_id_local
     };
 
     callback->Call(2, argv);
-    free(file_id);
+    if (file_id) {
+        free(file_id);
+    }
 }
 
 void StoreFileProgressCallback(double progress, uint64_t downloaded_bytes, uint64_t total_bytes, void *handle) {
@@ -185,21 +204,20 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
 
     String::Utf8Value file_name_str(options->Get(Nan::New("filename").ToLocalChecked()).As<v8::String>());
     const char *file_name = *file_name_str;
-    const char *file_name_dup = strdup(file_name_dup);
+    const char *file_name_dup = strdup(file_name);
 
     FILE *fd = fopen(file_path, "r");
 
     // TOOD check that file is open
 
-    storj_upload_opts_t upload_opts = {
-      .prepare_frame_limit =  1,
-      .push_frame_limit =  64,
-      .push_shard_limit =  64,
-      .rs =  true,
-      .bucket_id = bucket_id_dup,
-      .file_name = file_name_dup,
-      .fd = fd
-    };
+    storj_upload_opts_t upload_opts = {};
+    upload_opts.prepare_frame_limit =  1,
+    upload_opts.push_frame_limit =  64;
+    upload_opts.push_shard_limit =  64;
+    upload_opts.rs =  true;
+    upload_opts.bucket_id = bucket_id_dup;
+    upload_opts.file_name = file_name_dup;
+    upload_opts.fd = fd;
 
     storj_upload_state_t *state = static_cast<storj_upload_state_t*>(malloc(sizeof(storj_upload_state_t)));
     // TODO handle error

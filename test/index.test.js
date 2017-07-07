@@ -120,8 +120,9 @@ describe('libstorj', function() {
     });
   });
 
-  describe('#upload', function() {
+  describe('#storeFile', function() {
     it('should upload a file', function(done) {
+      this.timeout(0);
       let env = new libstorj.Environment({
         bridgeUrl: 'http://localhost:3000',
         bridgeUser: 'testuser@storj.io',
@@ -129,7 +130,7 @@ describe('libstorj', function() {
         encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
       });
 
-      let bucketId = 'testbucketid';
+      let bucketId = '368be0816766b28fd5f43af5';
       let filePath = './storj-test-upload.data';
 
       createUploadFile(filePath);
@@ -139,7 +140,11 @@ describe('libstorj', function() {
 
         },
         finishedCallback: function(err, fileId) {
-
+          if (err) {
+            return done(err);
+          }
+          console.log('File complete:', fileId);
+          done();
         },
         filename: 'storj-test-upload.data'
       };
@@ -163,6 +168,5 @@ function createUploadFile(filepath) {
 
     fs.writeSync(out, nextBuf);
   }
-
   fs.closeSync(out);
 }
