@@ -52,11 +52,25 @@ void GetInfoCallback(uv_work_t *work_req, int status) {
 
     Nan::Callback *callback = (Nan::Callback*)req->handle;
 
-    const char *result_str = json_object_to_json_string(req->response);
+    v8::Local<v8::Value> error = Nan::Null();
+    v8::Local<Value> result = Nan::Null();
+
+    if (req->error_code || req->response == NULL) {
+        if (req->error_code) {
+            const char* error_msg = curl_easy_strerror((CURLcode)req->error_code);
+            v8::Local<v8::String> msg = Nan::New(error_msg).ToLocalChecked();
+            error = Nan::Error(msg);
+        } else {
+            error = Nan::Error(Nan::New("Failed to get info").ToLocalChecked());
+        }
+    } else {
+        const char *result_str = json_object_to_json_string(req->response);
+        result = v8::JSON::Parse(Nan::New(result_str).ToLocalChecked());
+    }
 
     Local<Value> argv[] = {
-        Nan::Null(),
-        v8::JSON::Parse(Nan::New(result_str).ToLocalChecked())
+        error,
+        result
     };
 
     callback->Call(2, argv);
