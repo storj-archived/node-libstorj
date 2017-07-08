@@ -34,7 +34,7 @@ First setup the storj environment with authentication and encryption options:
 ```js
 const libstorj = require('..');
 
-let storj = new libstorj.Environment({
+const storj = new libstorj.Environment({
   bridgeUrl: 'https://api.storj.io',
   bridgeUser: 'user@domain.com',
   bridgePass: 'password',
@@ -42,19 +42,29 @@ let storj = new libstorj.Environment({
 });
 ```
 
-Get basic information about the bridge API:
+Upload a file to a bucket:
 ```js
-storj.getInfo(function(err, result) {
-  if (err) {
-    return console.error(err);
+const bucketId = '368be0816766b28fd5f43af5';
+const filePath = './storj-test-upload.data';
+
+storj.storeFile(bucketId, filePath, {
+  filename: 'storj-test-upload.data',
+  progressCallback: function(progress, downloadedBytes, totalBytes) {
+    console.log('progress:', progress);
+  },
+  finishedCallback: function(err, fileId) {
+    if (err) {
+      return console.error(err);
+    }
+    console.log('File complete:', fileId);
   }
-  console.log('info:', result);
 });
+
 ```
 
 Create a new bucket:
 ```js
-let testBucketName = 'test-' + Date.now();
+const testBucketName = 'test-' + Date.now();
 storj.createBucket(testBucketName, function(err, result) {
   if (err) {
     return console.error(err);
@@ -73,22 +83,12 @@ storj.getBuckets(function(err, result) {
 });
 ```
 
-Upload a file to a bucket:
+Get basic information about the bridge API:
 ```js
-let bucketId = '368be0816766b28fd5f43af5';
-let filePath = './storj-test-upload.data';
-
-storj.storeFile(bucketId, filePath, {
-  filename: 'storj-test-upload.data',
-  progressCallback: function(progress, downloadedBytes, totalBytes) {
-    console.log('progress:', progress);
-  },
-  finishedCallback: function(err, fileId) {
-    if (err) {
-      return console.error(err);
-    }
-    console.log('File complete:', fileId);
+storj.getInfo(function(err, result) {
+  if (err) {
+    return console.error(err);
   }
+  console.log('info:', result);
 });
-
 ```
