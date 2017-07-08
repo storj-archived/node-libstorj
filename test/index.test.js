@@ -151,7 +151,7 @@ describe('libstorj', function() {
       env.storeFile(bucketId, filePath, {
         filename: 'storj-test-upload.data',
         index: 'd2891da46d9c3bf42ad619ceddc1b6621f83e6cb74e6b6b6bc96bdbfaefb8692',
-        progressCallback: function(progress, downloadedBytes, totalBytes) {
+        progressCallback: function(progress, uploadedBytes, totalBytes) {
           // console.log('progress:', progress);
         },
         finishedCallback: function(err, fileId) {

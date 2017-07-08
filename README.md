@@ -42,12 +42,11 @@ let storj = new libstorj.Environment({
 });
 ```
 
-
 Get basic information about the bridge API:
 ```js
 storj.getInfo(function(err, result) {
   if (err) {
-    console.error(err);
+    return console.error(err);
   }
   console.log('info:', result);
 });
@@ -58,7 +57,7 @@ Create a new bucket:
 let testBucketName = 'test-' + Date.now();
 storj.createBucket(testBucketName, function(err, result) {
   if (err) {
-    console.error(err);
+    return console.error(err);
   }
   console.log('info:', result);
 });
@@ -68,7 +67,7 @@ View all available buckets:
 ```js
 storj.getBuckets(function(err, result) {
   if (err) {
-    console.error(err);
+    return console.error(err);
   }
   console.log('buckets:', result);
 });
@@ -86,7 +85,7 @@ storj.storeFile(bucketId, filePath, {
   },
   finishedCallback: function(err, fileId) {
     if (err) {
-      console.error(err);
+      return console.error(err);
     }
     console.log('File complete:', fileId);
   }

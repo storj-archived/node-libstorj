@@ -1,23 +1,23 @@
 const libstorj = require('..');
 
-let env = new libstorj.Environment({
+const storj = new libstorj.Environment({
   bridgeUrl: 'https://api.storj.io',
   bridgeUser: 'user@domain.com',
   bridgePass: 'password',
   encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
 });
 
-env.getInfo(function(err, result) {
+storj.getInfo(function(err, result) {
   if (err) {
-    console.error(err);
+    return console.error(err);
   }
   console.log('info:', result);
 });
 
 
-env.getBuckets(function(err, result) {
+storj.getBuckets(function(err, result) {
   if (err) {
-    console.error(err);
+    return console.error(err);
   }
   console.log('buckets:', result);
 });

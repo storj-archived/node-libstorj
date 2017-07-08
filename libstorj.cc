@@ -250,8 +250,18 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
     const char *index_dup = strdup(index);
 
     FILE *fd = fopen(file_path, "r");
+    if (!fd) {
+        v8::Local<v8::String> msg = Nan::New("Unable to open file").ToLocalChecked();
+        v8::Local<v8::Value> error = Nan::Error(msg);
 
-    // TOOD check that file is open
+        Local<Value> argv[] = {
+            error,
+            Nan::Null()
+        };
+
+        upload_callbacks->finished_callback->Call(2, argv);
+        return;
+    }
 
     storj_upload_opts_t upload_opts = {};
     upload_opts.prepare_frame_limit =  1,
