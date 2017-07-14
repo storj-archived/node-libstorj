@@ -47,7 +47,9 @@ app.get('/buckets/368be0816766b28fd5f43af5/file-ids/hTY5wsqYyLJQppCMiFQI7v2n/IZZ
 });
 
 app.get('/buckets/368be0816766b28fd5f43af5/files/998960317b6725a3f8080c2b', function(req, res) {
-  // TODO
+  if (checkAuth()) {
+    res.status(200).json(mockbridge['getfilepointers-1']);
+  }
 });
 
 app.get('/frames', function(req, res) {

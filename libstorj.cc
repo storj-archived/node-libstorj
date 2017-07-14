@@ -288,31 +288,27 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
         StoreFileFinishedCallback);
 }
 
-void ResolveFileFinishedCallback(int status, char *file_id, void *handle) {
+void ResolveFileFinishedCallback(int status, FILE *fd, void *handle) {
     Nan::HandleScope scope;
+
+    fclose(fd);
 
     transfer_callbacks_t *download_callbacks = (transfer_callbacks_t *) handle;
     Nan::Callback *callback = download_callbacks->finished_callback;
 
-    Local<Value> file_id_local = Nan::Null();
-    if (status == 0) {
-        file_id_local = Nan::New(file_id).ToLocalChecked();
-    }
-
     Local<Value> error = IntToError(status);
 
     Local<Value> argv[] = {
-        error,
-        file_id_local
+        error
     };
 
-    callback->Call(2, argv);
-    if (file_id) {
-        free(file_id);
-    }
+    callback->Call(1, argv);
 }
 
-void ResolveFileProgressCallback(double progress, uint64_t downloaded_bytes, uint64_t total_bytes, void *handle) {
+void ResolveFileProgressCallback(double progress,
+        uint64_t downloaded_bytes,
+        uint64_t total_bytes,
+        void *handle) {
     Nan::HandleScope scope;
 
     transfer_callbacks_t *download_callbacks = (transfer_callbacks_t *) handle;
@@ -349,10 +345,18 @@ void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
     String::Utf8Value file_path_str(args[2]);
     const char *file_path = *file_path_str;
 
+
+    v8::Local<v8::Object> options = args[3].As<v8::Object>();
+
+    transfer_callbacks_t *download_callbacks = static_cast<transfer_callbacks_t*>(malloc(sizeof(transfer_callbacks_t)));
+
+    download_callbacks->progress_callback = new Nan::Callback(options->Get(Nan::New("progressCallback").ToLocalChecked()).As<Function>());
+    download_callbacks->finished_callback = new Nan::Callback(options->Get(Nan::New("finishedCallback").ToLocalChecked()).As<Function>());
+
     FILE *fd = NULL;
 
     if (file_path) {
-        if(access(path, F_OK) != -1 ) {
+        if(access(file_path, F_OK) != -1 ) {
             printf("Warning: File already exists at path [%s].\n", file_path);
 
             bool overwrite = false;
@@ -360,7 +364,7 @@ void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
                 unlink(file_path);
             } else {
                 printf("\nCanceled overwriting of [%s].\n", file_path);
-                return 1;
+                return;
             }
 
         }
@@ -372,8 +376,8 @@ void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
 
     if (fd == NULL) {
         // TODO send to stderr
-        printf("Unable to open %s: %s\n", path, strerror(errno));
-        return 1;
+        printf("Unable to open %s: %s\n", file_path, strerror(errno));
+        return;
     }
 
     storj_download_state_t *state = static_cast<storj_download_state_t*>( malloc(sizeof(storj_download_state_t)));
