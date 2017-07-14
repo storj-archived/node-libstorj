@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+const bodyParser = require('body-parser');
+const fs = require('fs');
 
 const shards = [
   '179723620bfce52a6efaa6d311811cd9a31c51dc',
@@ -46,6 +48,28 @@ app.get("/", function(req, res) {
   res.sendStatus(200);
 });
 
+app.get('/shards/:hash', function(req, res) {
+  console.log('farmer: hash: ' + req.params.hash);
+  if (req.params.hash === retryShard) {
+    if (count == 0) {
+      count += 1;
+      res.sendStatus(500);
+    } else {
+      res.header('content-type', 'application/octet-stream');
+      const out = fs.openSync('/tmp/' + req.params.hash + '.data', 'r');
+      out.pipe(res);
+    }
+  } else {
+    if (shards.includes(req.params.hash)) {
+      res.header('content-type', 'application/octet-stream');
+      const out = fs.openSync('/tmp/' + req.params.hash + '.data', 'r');
+      out.pipe(res);
+    } else {
+      res.sendStatus(404);
+    }
+  }
+});
+
 let count = 0;
 app.post('/shards/:hash', function(req, res) {
   if (req.params.hash === retryShard) {
@@ -57,7 +81,15 @@ app.post('/shards/:hash', function(req, res) {
     }
   } else {
     if (shards.includes(req.params.hash)) {
-      res.sendStatus(200);
+      const out = fs.openSync('/tmp/' + req.params.hash + '.data', 'w');
+      req.on('data', function(data) {
+        fs.writeSync(out, data);
+      });
+      req.on('end', function() {
+        fs.closeSync(out);
+        res.sendStatus(200);
+      });
+
     } else {
       res.sendStatus(404);
     }
