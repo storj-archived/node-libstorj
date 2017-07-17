@@ -202,12 +202,9 @@ function createUploadFile(filepath) {
   const out = fs.openSync(filepath, 'w');
 
   for (let i=0; i<letters.length; i++) {
-    let nextBuf = '';
-    for (let j=0; j<shardSize; j++) {
-      nextBuf += letters[i];
-    }
-
+    let nextBuf = Buffer.alloc(shardSize, letters[i]);
     fs.writeSync(out, nextBuf);
   }
+
   fs.closeSync(out);
 }

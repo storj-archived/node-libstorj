@@ -49,7 +49,6 @@ app.get("/", function(req, res) {
 });
 
 app.get('/shards/:hash', function(req, res) {
-  console.log('farmer: hash: ' + req.params.hash);
   if (req.params.hash === retryShard) {
     if (count == 0) {
       count += 1;
