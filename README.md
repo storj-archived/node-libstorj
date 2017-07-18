@@ -62,6 +62,26 @@ storj.storeFile(bucketId, filePath, {
 
 ```
 
+Download a file from a bucket:
+
+```js
+const bucketId = '368be0816766b28fd5f43af5';
+const fileId = '998960317b6725a3f8080c2b';
+const downloadFilePath = './storj-test-download.data';
+
+storj.resolveFile(bucketId, fileId, downloadFilePath, {
+  progressCallback: function(progress, downloadedBytes, totalBytes) {
+    console.log('progress:', progress)
+  },
+  finishedCallback: function(err) {
+    if (err) {
+      return console.error(err);
+    }
+    console.log('File download complete');
+  }
+});
+```
+
 Create a new bucket:
 ```js
 const testBucketName = 'test-' + Date.now();

@@ -27,11 +27,11 @@ storj.storeFile(bucketId, uploadFilePath, {
 
     // download file that was just uploaded
     storj.resolveFile(bucketId, fileId, downloadFilePath, {
-      progressCallback: function(progress, uploadedBytes, totalBytes) {
-        console.log('Progress: %d, uploadedBytes: %d, totalBytes: %d',
-                    progress, uploadedBytes, totalBytes);
+      progressCallback: function(progress, downloadedBytes, totalBytes) {
+        console.log('Progress: %d, downloadedBytes: %d, totalBytes: %d',
+                    progress, downloadedBytes, totalBytes);
       },
-      finishedCallback: function(err, fileId) {
+      finishedCallback: function(err) {
         if (err) {
           return console.error(err);
         }
