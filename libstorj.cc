@@ -4,12 +4,6 @@
 #include <uv.h>
 #include "storj.h"
 
-void json_logger(const char *message, int level, void *handle)
-{
-    printf("{\"message\": \"%s\", \"level\": %i, \"timestamp\": %" PRIu64 "}\n",
-           message, level, storj_util_timestamp());
-}
-
 using namespace v8;
 using namespace Nan;
 
@@ -477,8 +471,8 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     http_options.timeout = STORJ_HTTP_TIMEOUT;
 
     storj_log_options_t log_options = {};
-    log_options.logger = json_logger;
-    log_options.level = 4;
+    log_options.logger = NULL;
+    log_options.level = 0;
 
     // Initialize environment
 

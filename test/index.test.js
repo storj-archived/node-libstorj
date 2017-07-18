@@ -203,7 +203,7 @@ function createUploadFile(filepath) {
 
   for (let i=0; i<letters.length; i++) {
     let nextBuf = Buffer.alloc(shardSize, letters[i]);
-    fs.writeSync(out, nextBuf);
+    fs.writeSync(out, nextBuf, 0, shardSize);
   }
 
   fs.closeSync(out);
