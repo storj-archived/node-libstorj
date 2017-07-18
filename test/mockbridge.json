@@ -273,7 +273,7 @@
   "getfilepointers-0": [
     {
       "token": "de8e83dcf41789d66f2855259f35b729c9834eeb",
-      "hash": "269e72f24703be80bbb10499c91dc9b2022c4dc3",
+      "hash": "76ec05cdfa1bc0810c5a555350d1e4cb81b01524",
       "farmer": {
         "userAgent": "6.0.1",
         "protocol": "1.0.0",
@@ -287,13 +287,13 @@
       "size": 16777216
     },
     {
-      "hash": "17416a592487d7b1b74c100448c8296122d8aff8",
+      "hash": "179723620bfce52a6efaa6d311811cd9a31c51dc",
       "index": 1,
       "size": 16777216
     },
     {
-      "token": "f63d4f4d7ca0c3e4bca5c9dcd4a1c3be212f137e",
-      "hash": "83cf5eaf2311a1ae9699772d9bafbb3e369a41cc",
+      "token": "179723620bfce52a6efaa6d311811cd9a31c51dc",
+      "hash": "3920fcb1acf8d773bdff94edd293b57e1506073d",
       "farmer": {
         "userAgent": "6.0.1",
         "protocol": "1.0.0",
@@ -310,7 +310,7 @@
   "getfilepointers-1": [
     {
       "token": "cc02fb5c9687c397fd1ead5a2e71239dcffb0f4c",
-      "hash": "214ed86cb1287fe0fd18c174eecbf84341bf2655",
+      "hash": "76d9efb59a35a3c3862bbfb489ab1ed916f3f0d3",
       "farmer": {
         "userAgent": "6.0.1",
         "protocol": "1.0.0",
@@ -325,7 +325,7 @@
     },
     {
       "token": "2d9ae13d317209c1523b80716f186f887a4c7d3a",
-      "hash": "1ea408fad0213a16f53421e9b72aeb0e12b93a4a",
+      "hash": "a590ff71ca93662d63942fc2dcc2125cd592a4d4",
       "farmer": {
         "userAgent": "6.0.1",
         "protocol": "1.0.0",
@@ -340,7 +340,7 @@
     },
     {
       "token": "382827e71429823a4aafedbe839b4efee9d5f68b",
-      "hash": "0219bb523832c09c77069c74804e5b0476cea7cf",
+      "hash": "4a9986ed3ec84a8a1b62b8ce9770002cf9aff02a",
       "farmer": {
         "userAgent": "6.0.1",
         "protocol": "1.0.0",
@@ -357,7 +357,7 @@
   "getfilepointers-2": [
     {
       "token": "de8e83dcf41789d66f2855259f35b729c9834eeb",
-      "hash": "ebcbe78dd209a03d3ce29f2e5460304de2060031",
+      "hash": "1391bf1eb215941e84bd8c52201511041580918e",
       "farmer": {
         "userAgent": "6.0.1",
         "protocol": "1.0.0",
@@ -372,7 +372,7 @@
     },
     {
       "token": "bc1b9cc047fc805fe756b08789f5db4ec37dc11e",
-      "hash": "5ecd6cc2964a344b42406d3688e13927a51937aa",
+      "hash": "b6a676b696751baa9c04d82096a35107ca7f46b6",
       "farmer": {
         "userAgent": "6.0.1",
         "protocol": "1.0.0",
@@ -386,7 +386,7 @@
       "size": 16777216
     },
     {
-      "hash": "88c5e8885160c449b1dbb00ccf317067200b39a0",
+      "hash": "b88b80d9f0942b90a86274b53e5ab3c8fae614de",
       "index": 8,
       "size": 16777216
     }
@@ -394,7 +394,7 @@
   "getfilepointers-3": [
     {
       "token": "cc02fb5c9687c397fd1ead5a2e71239dcffb0f4c",
-      "hash": "76b1a97498e026c47c924374b5b1148543d5c0ab",
+      "hash": "a51df80009ca689b9b05c84ec6511a1bfcbd53af",
       "farmer": {
         "userAgent": "6.0.1",
         "protocol": "1.0.0",
@@ -409,7 +409,7 @@
     },
     {
       "token": "2d9ae13d317209c1523b80716f186f887a4c7d3a",
-      "hash": "48e02627e37433c89fa034d3ee2df644ac7ac7a0",
+      "hash": "7afaf8bf5bbc6e0f69a4369db38d66c34caa47b5",
       "farmer": {
         "userAgent": "6.0.1",
         "protocol": "1.0.0",
@@ -424,7 +424,7 @@
     },
     {
       "token": "382827e71429823a4aafedbe839b4efee9d5f68b",
-      "hash": "e4617532be728d48a8155ecfb200d50f00a01a23",
+      "hash": "a8f3fb43cc3a2ebbace4e435a49c4ddbc4c2e624",
       "farmer": {
         "userAgent": "6.0.1",
         "protocol": "1.0.0",
@@ -441,7 +441,7 @@
   "getfilepointers-4": [
     {
       "token": "de8e83dcf41789d66f2855259f35b729c9834eeb",
-      "hash": "973701b43290e3bef7007db0cb75744f9556ae3b",
+      "hash": "0eb2a9961b3fd7752925af681784fbcb3483e211",
       "farmer": {
         "userAgent": "6.0.1",
         "protocol": "1.0.0",
@@ -456,7 +456,7 @@
     },
     {
       "token": "bc1b9cc047fc805fe756b08789f5db4ec37dc11e",
-      "hash": "a0ec63ad4069fa51a53871c7a282e184371b842b",
+      "hash": "04e21b32ffefb39c93023006148a6fcdd4fed66a",
       "farmer": {
         "userAgent": "6.0.1",
         "protocol": "1.0.0",
@@ -471,7 +471,7 @@
     },
     {
       "token": "4a207fadceca4a9622f0ef25b1220ef9b8cf4831",
-      "hash": "5b388088b0ef4b44594311794cc1390b85c2f6d3",
+      "hash": "f08c086703e511d38b0529afe6cc64f35b40bf1f",
       "farmer": {
         "userAgent": "6.0.1",
         "protocol": "1.0.0",
@@ -489,7 +489,7 @@
   "getfilepointers-5": [
     {
       "token": "3b3f8ccb23ec47cec1ad57f7f68cab285dde54d6",
-      "hash": "424cdf090604317570da38ef7d5b41abea0952df",
+      "hash": "a058c13bf955d1d6134ab37ad6210de9cf539668",
       "farmer": {
         "userAgent": "6.0.1",
         "protocol": "1.0.0",
@@ -505,7 +505,7 @@
     },
     {
       "token": "44e1db2c17af152618dbe319f8f2bf1a6ef21b94",
-      "hash": "a292c0de26b2a9086473905abb938c7a1c45a9e9",
+      "hash": "e0a3e7539912f15c83893f368cfe55e7a0909fbb",
       "farmer": {
         "userAgent": "6.0.1",
         "protocol": "1.0.0",
@@ -521,7 +521,7 @@
     },
     {
       "token": "9424f843e3a10a7f96dc79a301c6700385d1a74b",
-      "hash": "aca155b4deeac64f2be748e3c434e1f5e9719ef3",
+      "hash": "a549cec8729de18e021c72b6a17009e0381b7bc6",
       "farmer": {
         "userAgent": "6.0.1",
         "protocol": "1.0.0",
@@ -539,7 +539,7 @@
   "getfilepointers-r": [
     {
       "token": "2d9ae13d317209c1523b80716f186f887a4c7d3a",
-      "hash": "1ea408fad0213a16f53421e9b72aeb0e12b93a4a",
+      "hash": "a590ff71ca93662d63942fc2dcc2125cd592a4d4",
       "farmer": {
         "userAgent": "6.0.1",
         "protocol": "1.0.0",
@@ -555,7 +555,7 @@
   ],
   "getfilepointers-missing": [
     {
-      "hash": "1ea408fad0213a16f53421e9b72aeb0e12b93a4a",
+      "hash": "f08c086703e511d38b0529afe6cc64f35b40bf1f",
       "parity": true,
       "index": 14,
       "size": 16777216

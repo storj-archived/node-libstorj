@@ -164,6 +164,35 @@ describe('libstorj', function() {
       });
     });
   });
+
+  describe('#resolveFile', function() {
+    it('should download a file', function(done) {
+      this.timeout(0);
+      let env = new libstorj.Environment({
+        bridgeUrl: 'http://localhost:3000',
+        bridgeUser: 'testuser@storj.io',
+        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
+        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+      });
+
+      let bucketId = '368be0816766b28fd5f43af5';
+      let fileId = '998960317b6725a3f8080c2b';
+      let filePath = './storj-test-download.data';
+
+      env.resolveFile(bucketId, fileId, filePath, {
+        progressCallback: function(progress, uploadedBytes, totalBytes) {
+          // console.log('progress:', progress);
+        },
+        finishedCallback: function(err) {
+          if (err) {
+            return done(err);
+          }
+          console.log('File downloaded');
+          done();
+        }
+      });
+    });
+  });
 });
 
 function createUploadFile(filepath) {
@@ -173,12 +202,9 @@ function createUploadFile(filepath) {
   const out = fs.openSync(filepath, 'w');
 
   for (let i=0; i<letters.length; i++) {
-    let nextBuf = '';
-    for (let j=0; j<shardSize; j++) {
-      nextBuf += letters[i];
-    }
-
-    fs.writeSync(out, nextBuf);
+    let nextBuf = Buffer.alloc(shardSize, letters[i]);
+    fs.writeSync(out, nextBuf, 0, shardSize);
   }
+
   fs.closeSync(out);
 }

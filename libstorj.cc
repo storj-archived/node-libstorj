@@ -10,7 +10,7 @@ using namespace Nan;
 typedef struct {
     Nan::Callback *progress_callback;
     Nan::Callback *finished_callback;
-} upload_callbacks_t;
+} transfer_callbacks_t;
 
 Local<Value> IntToError(int error_code) {
     if (!error_code) {
@@ -180,7 +180,7 @@ void CreateBucket(const Nan::FunctionCallbackInfo<Value>& args) {
 void StoreFileFinishedCallback(int status, char *file_id, void *handle) {
     Nan::HandleScope scope;
 
-    upload_callbacks_t *upload_callbacks = (upload_callbacks_t *) handle;
+    transfer_callbacks_t *upload_callbacks = (transfer_callbacks_t *) handle;
     Nan::Callback *callback = upload_callbacks->finished_callback;
 
     Local<Value> file_id_local = Nan::Null();
@@ -204,7 +204,7 @@ void StoreFileFinishedCallback(int status, char *file_id, void *handle) {
 void StoreFileProgressCallback(double progress, uint64_t downloaded_bytes, uint64_t total_bytes, void *handle) {
     Nan::HandleScope scope;
 
-    upload_callbacks_t *upload_callbacks = (upload_callbacks_t *) handle;
+    transfer_callbacks_t *upload_callbacks = (transfer_callbacks_t *) handle;
     Nan::Callback *callback = upload_callbacks->progress_callback;
 
     Local<Number> progress_local = Nan::New(progress);
@@ -236,7 +236,7 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
 
     v8::Local<v8::Object> options = args[2].As<v8::Object>();
 
-    upload_callbacks_t *upload_callbacks = static_cast<upload_callbacks_t*>(malloc(sizeof(upload_callbacks_t)));
+    transfer_callbacks_t *upload_callbacks = static_cast<transfer_callbacks_t*>(malloc(sizeof(transfer_callbacks_t)));
 
     upload_callbacks->progress_callback = new Nan::Callback(options->Get(Nan::New("progressCallback").ToLocalChecked()).As<Function>());
     upload_callbacks->finished_callback = new Nan::Callback(options->Get(Nan::New("finishedCallback").ToLocalChecked()).As<Function>());
@@ -288,6 +288,113 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
         StoreFileFinishedCallback);
 }
 
+void ResolveFileFinishedCallback(int status, FILE *fd, void *handle) {
+    Nan::HandleScope scope;
+
+    fclose(fd);
+
+    transfer_callbacks_t *download_callbacks = (transfer_callbacks_t *) handle;
+    Nan::Callback *callback = download_callbacks->finished_callback;
+
+    Local<Value> error = IntToError(status);
+
+    Local<Value> argv[] = {
+        error
+    };
+
+    callback->Call(1, argv);
+}
+
+void ResolveFileProgressCallback(double progress,
+        uint64_t downloaded_bytes,
+        uint64_t total_bytes,
+        void *handle) {
+    Nan::HandleScope scope;
+
+    transfer_callbacks_t *download_callbacks = (transfer_callbacks_t *) handle;
+    Nan::Callback *callback = download_callbacks->progress_callback;
+
+    Local<Number> progress_local = Nan::New(progress);
+    Local<Number> downloaded_bytes_local = Nan::New((double)downloaded_bytes);
+    Local<Number> total_bytes_local = Nan::New((double)total_bytes);
+
+    Local<Value> argv[] = {
+        progress_local,
+        downloaded_bytes_local,
+        total_bytes_local
+    };
+
+    callback->Call(3, argv);
+}
+
+void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.This()->InternalFieldCount() != 1) {
+        Nan::ThrowError("Environment not available for instance");
+    }
+
+    storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+
+    String::Utf8Value bucket_id_str(args[0]);
+    const char *bucket_id = *bucket_id_str;
+    const char *bucket_id_dup = strdup(bucket_id);
+
+    String::Utf8Value file_id_str(args[1]);
+    const char *file_id = *file_id_str;
+    const char *file_id_dup = strdup(file_id);
+
+    String::Utf8Value file_path_str(args[2]);
+    const char *file_path = *file_path_str;
+
+
+    v8::Local<v8::Object> options = args[3].As<v8::Object>();
+
+    transfer_callbacks_t *download_callbacks = static_cast<transfer_callbacks_t*>(malloc(sizeof(transfer_callbacks_t)));
+
+    download_callbacks->progress_callback = new Nan::Callback(options->Get(Nan::New("progressCallback").ToLocalChecked()).As<Function>());
+    download_callbacks->finished_callback = new Nan::Callback(options->Get(Nan::New("finishedCallback").ToLocalChecked()).As<Function>());
+
+    FILE *fd = NULL;
+
+    if (file_path) {
+        if(access(file_path, F_OK) != -1 ) {
+            printf("Warning: File already exists at path [%s].\n", file_path);
+
+            bool overwrite = false;
+            if (overwrite) {
+                unlink(file_path);
+            } else {
+                printf("\nCanceled overwriting of [%s].\n", file_path);
+                return;
+            }
+
+        }
+
+        fd = fopen(file_path, "w+");
+    } else {
+        fd = stdout;
+    }
+
+    if (fd == NULL) {
+        // TODO send to stderr
+        printf("Unable to open %s: %s\n", file_path, strerror(errno));
+        return;
+    }
+
+    storj_download_state_t *state = static_cast<storj_download_state_t*>( malloc(sizeof(storj_download_state_t)));
+    // TODO handle error
+
+    int status = storj_bridge_resolve_file(env,
+        state,
+        bucket_id_dup,
+        file_id_dup,
+        fd,
+        (void *) download_callbacks,
+        ResolveFileProgressCallback,
+        ResolveFileFinishedCallback);
+
+}
+
+
 void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::EscapableHandleScope scope;
 
@@ -306,6 +413,7 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::SetPrototypeMethod(constructor, "getBuckets", GetBuckets);
     Nan::SetPrototypeMethod(constructor, "createBucket", CreateBucket);
     Nan::SetPrototypeMethod(constructor, "storeFile", StoreFile);
+    Nan::SetPrototypeMethod(constructor, "resolveFile", ResolveFile);
 
     Nan::MaybeLocal<v8::Object> maybeInstance;
     v8::Local<v8::Object> instance;

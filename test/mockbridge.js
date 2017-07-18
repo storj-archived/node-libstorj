@@ -47,7 +47,36 @@ app.get('/buckets/368be0816766b28fd5f43af5/file-ids/hTY5wsqYyLJQppCMiFQI7v2n/IZZ
 });
 
 app.get('/buckets/368be0816766b28fd5f43af5/files/998960317b6725a3f8080c2b', function(req, res) {
-  // TODO
+  let skip = parseInt(req.query.skip);
+
+  switch(skip) {
+    case 0:
+      res.status(200).json(mockbridge['getfilepointers-0']);
+      break;
+    case 3:
+      res.status(200).json(mockbridge['getfilepointers-1']);
+      break;
+    case 6:
+      res.status(200).json(mockbridge['getfilepointers-2']);
+      break;
+    case 9:
+      res.status(200).json(mockbridge['getfilepointers-3']);
+      break;
+    case 12:
+      res.status(200).json(mockbridge['getfilepointers-4']);
+      break;
+    case 15:
+      res.status(200).json(mockbridge['getfilepointers-5']);
+      break;
+    case 4:
+      res.status(200).json(mockbridge['getfilepointers-r']);
+      break;
+    case 14:
+      res.status(200).json(mockbridge['getfilepointers-missing']);
+      break;
+    default:
+      res.status(200).json([]);
+  }
 });
 
 app.get('/frames', function(req, res) {
