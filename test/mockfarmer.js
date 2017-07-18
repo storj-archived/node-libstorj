@@ -43,27 +43,32 @@ const shards = [
 ];
 
 const retryShard = '1391bf1eb215941e84bd8c52201511041580918e';
-
+const retryShardDownload = 'a590ff71ca93662d63942fc2dcc2125cd592a4d4';
 app.get("/", function(req, res) {
   res.sendStatus(200);
 });
 
 app.get('/shards/:hash', function(req, res) {
-  if (req.params.hash === retryShard) {
+  console.log('getting hash ' + req.params.hash);
+  if (req.params.hash === retryShardDownload) {
     if (count == 0) {
+      console.log('1');
       count += 1;
       res.sendStatus(500);
     } else {
+      console.log('2');
       res.header('content-type', 'application/octet-stream');
-      const out = fs.openSync('/tmp/' + req.params.hash + '.data', 'r');
+      const out = fs.createReadStream('/tmp/' + req.params.hash + '.data');
       out.pipe(res);
     }
   } else {
     if (shards.includes(req.params.hash)) {
+      console.log('3');
       res.header('content-type', 'application/octet-stream');
-      const out = fs.openSync('/tmp/' + req.params.hash + '.data', 'r');
+      const out = fs.createReadStream('/tmp/' + req.params.hash + '.data');
       out.pipe(res);
     } else {
+      console.log('4');
       res.sendStatus(404);
     }
   }
@@ -76,7 +81,14 @@ app.post('/shards/:hash', function(req, res) {
       count += 1;
       res.sendStatus(500);
     } else {
-      res.sendStatus(200);
+      const out = fs.openSync('/tmp/' + req.params.hash + '.data', 'w');
+      req.on('data', function(data) {
+        fs.writeSync(out, data);
+      });
+      req.on('end', function() {
+        fs.closeSync(out);
+        res.sendStatus(200);
+      });
     }
   } else {
     if (shards.includes(req.params.hash)) {
