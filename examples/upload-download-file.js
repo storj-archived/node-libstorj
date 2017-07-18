@@ -8,10 +8,12 @@ const storj = new libstorj.Environment({
 });
 
 const bucketId = 'd1dacd35cb1ced91192223c2';
-const filePath = './storj-test-upload.data';
+const uploadFilePath = './storj-test-upload.data';
+const downloadFilePath = './storj-test-download.data';
 const fileName = 'storj-test-upload.data';
 
-storj.storeFile(bucketId, filePath, {
+// upload file
+storj.storeFile(bucketId, uploadFilePath, {
   filename: fileName,
   progressCallback: function(progress, uploadedBytes, totalBytes) {
     console.log('Progress: %d, uploadedBytes: %d, totalBytes: %d',
@@ -22,5 +24,19 @@ storj.storeFile(bucketId, filePath, {
       return console.error(err);
     }
     console.log('File upload complete:', fileId);
+
+    // download file that was just uploaded
+    storj.resolveFile(bucketId, fileId, downloadFilePath, {
+      progressCallback: function(progress, uploadedBytes, totalBytes) {
+        console.log('Progress: %d, uploadedBytes: %d, totalBytes: %d',
+                    progress, uploadedBytes, totalBytes);
+      },
+      finishedCallback: function(err, fileId) {
+        if (err) {
+          return console.error(err);
+        }
+        console.log('File download complete');
+      }
+    });
   }
 });
