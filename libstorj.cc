@@ -469,6 +469,7 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     http_options.low_speed_limit = STORJ_LOW_SPEED_LIMIT;
     http_options.low_speed_time = STORJ_LOW_SPEED_TIME;
     http_options.timeout = STORJ_HTTP_TIMEOUT;
+    http_options.cainfo_path = NULL;
 
     storj_log_options_t log_options = {};
     log_options.logger = NULL;
@@ -480,9 +481,6 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
                                       &encrypt_options,
                                       &http_options,
                                       &log_options);
-
-    // Use Node.js default event loop that will already be running
-    env->loop = uv_default_loop();
 
     // Pass along the environment so it can be accessed by methods
     instance->SetAlignedPointerInInternalField(0, env);
