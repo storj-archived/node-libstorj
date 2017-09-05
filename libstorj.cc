@@ -127,6 +127,32 @@ void GetBucketsCallback(uv_work_t *work_req, int status) {
     free(work_req);
 }
 
+void ListFilesCallback(uv_work_t *work_req, int status) {
+    Nan::HandleScope scope;
+
+    printf("inside listfilesballcabk\n");
+    list_files_request_t *req = (list_files_request_t *) work_req->data;
+
+    Nan::Callback *callback = (Nan::Callback*)req->handle;
+    Local<Array> files = Nan::New<Array>();
+    printf("looping...");
+    for (uint8_t i=0; i<req->total_files; i++) {
+        Local<Object> file = Nan::New<Object>();
+        file->Set(Nan::New("filename").ToLocalChecked(), Nan::New(req->files[i].filename).ToLocalChecked());
+        file->Set(Nan::New("mimetype").ToLocalChecked(), Nan::New(req->files[i].mimetype).ToLocalChecked());
+        file->Set(Nan::New("id").ToLocalChecked(), Nan::New(req->files[i].id).ToLocalChecked());
+        files->Set(i, file);
+    }
+    printf("done\n");
+    Local<Value> argv[] = {
+        Nan::Null(),
+        files
+    };
+    callback->Call(2, argv);
+    free(req);
+    free(work_req);
+}
+
 void GetBuckets(const Nan::FunctionCallbackInfo<Value>& args) {
     if (args.This()->InternalFieldCount() != 1) {
         Nan::ThrowError("Environment not available for instance");
@@ -137,6 +163,24 @@ void GetBuckets(const Nan::FunctionCallbackInfo<Value>& args) {
     Nan::Callback *callback = new Nan::Callback(args[0].As<Function>());
 
     storj_bridge_get_buckets(env, (void *) callback, GetBucketsCallback);
+}
+
+void ListFiles(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.This()->InternalFieldCount() != 1) {
+        Nan::ThrowError("Environment not available for instance");
+    }
+
+    storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+
+    printf("sanity check\n");
+    String::Utf8Value str(args[0]);
+    const char *bucket_id = *str;
+    const char *bucket_id_dup = strdup(bucket_id);
+    printf("bucket_id_dup: %s\n", bucket_id_dup);
+
+    Nan::Callback *callback = new Nan::Callback(args[1].As<Function>());
+
+    storj_bridge_list_files(env, bucket_id_dup, (void *) callback, ListFilesCallback);
 }
 
 void CreateBucketCallback(uv_work_t *work_req, int status) {
@@ -444,6 +488,7 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::SetPrototypeMethod(constructor, "getBuckets", GetBuckets);
     Nan::SetPrototypeMethod(constructor, "createBucket", CreateBucket);
     Nan::SetPrototypeMethod(constructor, "deleteBucket", DeleteBucket);
+    Nan::SetPrototypeMethod(constructor, "listFiles", ListFiles);
     Nan::SetPrototypeMethod(constructor, "storeFile", StoreFile);
     Nan::SetPrototypeMethod(constructor, "resolveFile", ResolveFile);
 
