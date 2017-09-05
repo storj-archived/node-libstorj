@@ -86,7 +86,7 @@ describe('libstorj', function() {
   });
 
   describe('#getBuckets', function() {
-    it('should get a list of buckets', function(done) {
+    it('should get a listkof buckets', function(done) {
       let env = new libstorj.Environment({
         bridgeUrl: 'http://localhost:3000',
         bridgeUser: 'testuser@storj.io',
@@ -153,6 +153,32 @@ describe('libstorj', function() {
             });
         });
     });
+
+  describe('#listFiles', function () {
+    it('should get a list of files for the specified bucket', function (done) {
+      let env = new libstorj.Environment({
+        bridgeUrl: 'http://localhost:3000',
+        bridgeUser: 'testuser@storj.io',
+        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
+        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+      });
+
+      env.listFiles('368be0816766b28fd5f43af5', function (err, result) {
+        if (err) {
+          return done(err);
+        }
+
+        let apiFiles = mockbridgeData.listfiles;
+        expect(result).to.be.an('array');
+        for (let i = 0; i < result.length; i++) {
+          expect(result[i].filename).to.equal(apiFiles[i].filename);
+          expect(result[i].mimetype).to.equal(apiFiles[i].mimetype);
+          expect(result[i].id).to.equal(apiFiles[i].id);
+        }
+        done();
+      });
+    });
+  });
 
   describe('#storeFile', function() {
     it('should upload a file', function(done) {
