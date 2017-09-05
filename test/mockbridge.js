@@ -115,6 +115,14 @@ app.post('/buckets', function(req, res) {
   }
 });
 
+app.delete('/buckets/368be0816766b28fd5f43af5', function(req, res) {
+    if (checkAuth()) {
+        let response = mockbridge.deleteBucket;
+
+        res.status(200).json(response);
+    }
+});
+
 app.post('/frames', function(req, res) {
   if (checkAuth()) {
     // TODO check post body
