@@ -171,7 +171,7 @@ void DeleteBucketCallback(uv_work_t *work_req, int status) {
     Local<Value> argv[] = {
         Nan::Null()
     };
-    callback->Call(2, argv);
+    callback->Call(1, argv);
     free(req);
     free(work_req);
 }
