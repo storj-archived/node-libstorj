@@ -161,6 +161,21 @@ void CreateBucketCallback(uv_work_t *work_req, int status) {
     free(work_req);
 }
 
+void DeleteBucketCallback(uv_work_t *work_req, int status) {
+    Nan::HandleScope scope;
+
+    json_request_t *req = (json_request_t *) work_req->data;
+
+    Nan::Callback *callback = (Nan::Callback*)req->handle;
+
+    Local<Value> argv[] = {
+        Nan::Null()
+    };
+    callback->Call(2, argv);
+    free(req);
+    free(work_req);
+}
+
 void CreateBucket(const Nan::FunctionCallbackInfo<Value>& args) {
     if (args.This()->InternalFieldCount() != 1) {
         Nan::ThrowError("Environment not available for instance");
@@ -175,6 +190,22 @@ void CreateBucket(const Nan::FunctionCallbackInfo<Value>& args) {
     Nan::Callback *callback = new Nan::Callback(args[1].As<Function>());
 
     storj_bridge_create_bucket(env, name_dup, (void *) callback, CreateBucketCallback);
+}
+
+void DeleteBucket(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.This()->InternalFieldCount() != 1) {
+        Nan::ThrowError("Environment not available for instance");
+    }
+
+    storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+
+    String::Utf8Value str(args[0]);
+    const char *id = *str;
+    const char *id_dup = strdup(id);
+
+    Nan::Callback *callback = new Nan::Callback(args[1].As<Function>());
+
+    storj_bridge_delete_bucket(env, id_dup, (void *) callback, DeleteBucketCallback);
 }
 
 void StoreFileFinishedCallback(int status, char *file_id, void *handle) {
@@ -412,6 +443,7 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::SetPrototypeMethod(constructor, "getInfo", GetInfo);
     Nan::SetPrototypeMethod(constructor, "getBuckets", GetBuckets);
     Nan::SetPrototypeMethod(constructor, "createBucket", CreateBucket);
+    Nan::SetPrototypeMethod(constructor, "deleteBucket", DeleteBucket);
     Nan::SetPrototypeMethod(constructor, "storeFile", StoreFile);
     Nan::SetPrototypeMethod(constructor, "resolveFile", ResolveFile);
 
