@@ -104,7 +104,7 @@ describe('libstorj', function() {
   });
 
   describe('#getBuckets', function() {
-    it('should get a listkof buckets', function(done) {
+    it('should get a list of buckets', function(done) {
       let env = new libstorj.Environment({
         bridgeUrl: 'http://localhost:3000',
         bridgeUser: 'testuser@storj.io',
