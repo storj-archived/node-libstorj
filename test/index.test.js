@@ -228,6 +228,41 @@ describe('libstorj', function() {
         }
       });
     });
+
+    describe.only('#storeFileCancel', function () {
+      it('should cancel the specified state\'s upload', function (done) {
+        this.timeout(0);
+        let env = new libstorj.Environment({
+          bridgeUrl: 'http://localhost:3000',
+          bridgeUser: 'testuser@storj.io',
+          bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
+          encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+        });
+
+        let bucketId = '368be0816766b28fd5f43af5';
+        let filePath = './storj-test-upload.data';
+
+        createUploadFile(filePath);
+
+        let finished = false;
+
+        let state = env.storeFile(bucketId, filePath, {
+          filename: 'storj-test-upload.data',
+          index: 'd2891da46d9c3bf42ad619ceddc1b6621f83e6cb74e6b6b6bc96bdbfaefb8692',
+          progressCallback: function () {
+          },
+          finishedCallback: function () {
+            finished = true;
+            done();
+          }
+        });
+
+        setTimeout(function () {
+          env.storeFileCancel(state);
+          expect(finished).to.equal(false);
+        }, 0);
+      });
+    });
   });
 
   describe('#resolveFile', function() {
