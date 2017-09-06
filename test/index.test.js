@@ -240,6 +240,28 @@ describe('libstorj', function() {
       });
     });
   });
+
+  describe('#deleteFile', function () {
+    it('should delete the specified file from the specified bucket', function (done) {
+      let env = new libstorj.Environment({
+        bridgeUrl: 'http://localhost:3000',
+        bridgeUser: 'testuser@storj.io',
+        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
+        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+      });
+
+      let targetBucketId = '368be0816766b28fd5f43af5';
+      let targetFileId = '998960317b6725a3f8080c2b';
+      env.deleteFile(targetBucketId, targetFileId, function (err) {
+        if (err) {
+          return done(err);
+        }
+
+        expect(err).to.equal(null);
+        done();
+      });
+    });
+  });
 });
 
 function createUploadFile(filepath) {

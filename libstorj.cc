@@ -469,6 +469,42 @@ void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
 
 }
 
+// TODO: this is the same as DeleteBucketCallback; refactor
+void DeleteFileCallback(uv_work_t *work_req, int status) {
+    Nan::HandleScope scope;
+
+    json_request_t *req = (json_request_t *) work_req->data;
+
+    Nan::Callback *callback = (Nan::Callback*)req->handle;
+
+    Local<Value> argv[] = {
+        Nan::Null()
+    };
+    callback->Call(1, argv);
+    free(req);
+    free(work_req);
+}
+
+void DeleteFile(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.This()->InternalFieldCount() != 1) {
+        Nan::ThrowError("Environment not available for instance");
+    }
+
+    storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+
+    String::Utf8Value bucket_id_str(args[0]);
+    const char *bucket_id = *bucket_id_str;
+    const char *bucket_id_dup = strdup(bucket_id);
+
+    String::Utf8Value file_id_str(args[1]);
+    const char *file_id = *file_id_str;
+    const char *file_id_dup = strdup(file_id);
+
+    Nan::Callback *callback = new Nan::Callback(args[2].As<Function>());
+
+    storj_bridge_delete_file(env, bucket_id_dup, file_id_dup, (void *) callback, DeleteFileCallback);
+}
+
 
 void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::EscapableHandleScope scope;
@@ -491,6 +527,7 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::SetPrototypeMethod(constructor, "listFiles", ListFiles);
     Nan::SetPrototypeMethod(constructor, "storeFile", StoreFile);
     Nan::SetPrototypeMethod(constructor, "resolveFile", ResolveFile);
+    Nan::SetPrototypeMethod(constructor, "deleteFile", DeleteFile);
 
     Nan::MaybeLocal<v8::Object> maybeInstance;
     v8::Local<v8::Object> instance;
