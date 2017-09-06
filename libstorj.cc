@@ -142,12 +142,10 @@ void GetBucketsCallback(uv_work_t *work_req, int status) {
 void ListFilesCallback(uv_work_t *work_req, int status) {
     Nan::HandleScope scope;
 
-    printf("inside listfilesballcabk\n");
     list_files_request_t *req = (list_files_request_t *) work_req->data;
 
     Nan::Callback *callback = (Nan::Callback*)req->handle;
     Local<Array> files = Nan::New<Array>();
-    printf("looping...");
     for (uint8_t i=0; i<req->total_files; i++) {
         Local<Object> file = Nan::New<Object>();
         file->Set(Nan::New("filename").ToLocalChecked(), Nan::New(req->files[i].filename).ToLocalChecked());
@@ -155,7 +153,6 @@ void ListFilesCallback(uv_work_t *work_req, int status) {
         file->Set(Nan::New("id").ToLocalChecked(), Nan::New(req->files[i].id).ToLocalChecked());
         files->Set(i, file);
     }
-    printf("done\n");
     Local<Value> argv[] = {
         Nan::Null(),
         files
@@ -184,11 +181,9 @@ void ListFiles(const Nan::FunctionCallbackInfo<Value>& args) {
 
     storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
 
-    printf("sanity check\n");
     String::Utf8Value str(args[0]);
     const char *bucket_id = *str;
     const char *bucket_id_dup = strdup(bucket_id);
-    printf("bucket_id_dup: %s\n", bucket_id_dup);
 
     Nan::Callback *callback = new Nan::Callback(args[1].As<Function>());
 
@@ -307,6 +302,13 @@ void StoreFileProgressCallback(double progress, uint64_t downloaded_bytes, uint6
     callback->Call(3, argv);
 }
 
+void GetErrorStatus(Local<String> property, const v8::PropertyCallbackInfo<Value>& info) {
+  Local<Object> self = info.Holder();
+  storj_upload_state_t *state = (storj_upload_state_t *)self->GetAlignedPointerFromInternalField(0);
+  Local<Integer> error_status = Nan::New<Integer>(state->error_status);
+  info.GetReturnValue().Set(error_status);
+}
+
 void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
     if (args.This()->InternalFieldCount() != 1) {
         Nan::ThrowError("Environment not available for instance");
@@ -373,6 +375,23 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
         (void *) upload_callbacks,
         StoreFileProgressCallback,
         StoreFileFinishedCallback);
+
+    Isolate* isolate = args.GetIsolate();
+    Local<ObjectTemplate> state_template = ObjectTemplate::New(isolate);
+    state_template->SetInternalFieldCount(1);
+
+    Local<Object> state_local = state_template->NewInstance();
+    state_local->SetAlignedPointerInInternalField(0, state);
+    state_local->SetAccessor(Nan::New("error_status").ToLocalChecked(), GetErrorStatus);
+
+    args.GetReturnValue().Set(state_local);
+}
+
+void StoreFileCancel(const Nan::FunctionCallbackInfo<Value>& args) {
+    Local<Object> state_local = Nan::To<Object>(args[0]).ToLocalChecked();
+    storj_upload_state_t *state = (storj_upload_state_t *)state_local->GetAlignedPointerFromInternalField(0);
+
+    storj_bridge_store_file_cancel(state);
 }
 
 void ResolveFileFinishedCallback(int status, FILE *fd, void *handle) {
@@ -538,6 +557,7 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::SetPrototypeMethod(constructor, "deleteBucket", DeleteBucket);
     Nan::SetPrototypeMethod(constructor, "listFiles", ListFiles);
     Nan::SetPrototypeMethod(constructor, "storeFile", StoreFile);
+    Nan::SetPrototypeMethod(constructor, "storeFileCancel", StoreFileCancel);
     Nan::SetPrototypeMethod(constructor, "resolveFile", ResolveFile);
     Nan::SetPrototypeMethod(constructor, "deleteFile", DeleteFile);
 
