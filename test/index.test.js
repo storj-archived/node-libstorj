@@ -66,6 +66,24 @@ describe('libstorj', function() {
     });
   });
 
+  describe('#mnemonicGenerate', function() {
+    describe('minimum strength', function () {
+      it('should return a new mnemonic larger than 50 characters', function () {
+        var mnemonic = libstorj.mnemonicGenerate(128);
+        expect(mnemonic).to.a('string');
+        expect(mnemonic.length).to.be.above(50)
+      });
+    });
+
+    describe('maximum strength', function () {
+      it('should return a new mnemonic larger than 100 characters', function () {
+        var mnemonic = libstorj.mnemonicGenerate(256);
+        expect(mnemonic).to.a('string');
+        expect(mnemonic.length).to.be.above(100)
+      });
+    })
+  });
+
   describe('#getInfo', function() {
     it('should get info about the bridge', function(done) {
       let env = new libstorj.Environment({

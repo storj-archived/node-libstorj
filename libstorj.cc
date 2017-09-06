@@ -45,6 +45,18 @@ void MnemonicCheck(const v8::FunctionCallbackInfo<Value>& args) {
     args.GetReturnValue().Set(mnemonic_check_result_local);
 }
 
+void MnemonicGenerate(const v8::FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+
+    char *mnemonic_result = NULL;
+    int32_t strength = Nan::To<int32_t>(args[0]).FromJust();
+
+    storj_mnemonic_generate(strength, &mnemonic_result);
+    Local<String> mnemonic_local = String::NewFromUtf8(isolate, mnemonic_result);
+
+    args.GetReturnValue().Set(mnemonic_local);
+}
+
 void GetInfoCallback(uv_work_t *work_req, int status) {
     Nan::HandleScope scope;
 
@@ -569,6 +581,7 @@ void init(Handle<Object> exports) {
     NODE_SET_METHOD(exports, "Environment", Environment);
     NODE_SET_METHOD(exports, "utilTimestamp", Timestamp);
     NODE_SET_METHOD(exports, "mnemonicCheck", MnemonicCheck);
+    NODE_SET_METHOD(exports, "mnemonicGenerate", MnemonicGenerate);
 }
 
 NODE_MODULE(storj, init);
