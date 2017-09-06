@@ -302,6 +302,13 @@ void StoreFileProgressCallback(double progress, uint64_t downloaded_bytes, uint6
     callback->Call(3, argv);
 }
 
+void GetErrorStatus(Local<String> property, const v8::PropertyCallbackInfo<Value>& info) {
+  Local<Object> self = info.Holder();
+  storj_upload_state_t *state = (storj_upload_state_t *)self->GetAlignedPointerFromInternalField(0);
+  Local<Integer> error_status = Nan::New<Integer>(state->error_status);
+  info.GetReturnValue().Set(error_status);
+}
+
 void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
     if (args.This()->InternalFieldCount() != 1) {
         Nan::ThrowError("Environment not available for instance");
@@ -375,6 +382,7 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
 
     Local<Object> state_local = state_template->NewInstance();
     state_local->SetAlignedPointerInInternalField(0, state);
+    state_local->SetAccessor(Nan::New("error_status").ToLocalChecked(), GetErrorStatus);
 
     args.GetReturnValue().Set(state_local);
 }

@@ -229,7 +229,7 @@ describe('libstorj', function() {
       });
     });
 
-    describe.only('#storeFileCancel', function () {
+    describe('#storeFileCancel', function () {
       it('should cancel the specified state\'s upload', function (done) {
         this.timeout(0);
         let env = new libstorj.Environment({
@@ -251,8 +251,10 @@ describe('libstorj', function() {
           index: 'd2891da46d9c3bf42ad619ceddc1b6621f83e6cb74e6b6b6bc96bdbfaefb8692',
           progressCallback: function () {
           },
-          finishedCallback: function () {
+          finishedCallback: function (err, fileId) {
             finished = true;
+            expect(err).to.match(/error: file transfer canceled/i);
+            expect(state.error_status).to.equal(1);
             done();
           }
         });
