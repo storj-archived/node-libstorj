@@ -29,7 +29,7 @@ $ npm run test
 
 To test with gdb for debugging:
 ```
-gdb --args node node_modules/.bin/_mocha -R spec test/index.test.js
+$ gdb --args node node_modules/.bin/_mocha -R spec test/index.test.js
 ```
 
 ## Example Usage
