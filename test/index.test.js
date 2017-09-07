@@ -277,7 +277,7 @@ describe('libstorj', function() {
       }
     });
 
-    it('should download a file', function(done) {
+    it.skip('should download a file', function(done) {
       this.timeout(0);
       let env = new libstorj.Environment({
         bridgeUrl: 'http://localhost:3000',
@@ -314,7 +314,7 @@ describe('libstorj', function() {
       }
     });
 
-    it('should cancel the specified state\'s upload', function (done) {
+    it.skip('should cancel the specified state\'s upload', function (done) {
       this.timeout(0);
       let env = new libstorj.Environment({
         bridgeUrl: 'http://localhost:3000',
@@ -348,7 +348,7 @@ describe('libstorj', function() {
   });
 
   describe('#deleteFile', function () {
-    it('should delete the specified file from the specified bucket', function (done) {
+    it.skip('should delete the specified file from the specified bucket', function (done) {
       let env = new libstorj.Environment({
         bridgeUrl: 'http://localhost:3000',
         bridgeUser: 'testuser@storj.io',
