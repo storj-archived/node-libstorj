@@ -27,6 +27,11 @@ To test:
 $ npm run test
 ```
 
+To test with gdb for debugging:
+```
+gdb --args node node_modules/.bin/_mocha -R spec test/index.test.js
+```
+
 ## Example Usage
 
 First setup the storj environment with authentication and encryption options:
