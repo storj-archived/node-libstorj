@@ -399,6 +399,13 @@ void StoreFileCancel(const Nan::FunctionCallbackInfo<Value>& args) {
     storj_bridge_store_file_cancel(state);
 }
 
+void ResolveFileCancel(const Nan::FunctionCallbackInfo<Value>& args) {
+    Local<Object> state_local = Nan::To<Object>(args[0]).ToLocalChecked();
+    storj_download_state_t *state = (storj_download_state_t *)state_local->GetAlignedPointerFromInternalField(0);
+
+    storj_bridge_resolve_file_cancel(state);
+}
+
 void ResolveFileFinishedCallback(int status, FILE *fd, void *handle) {
     Nan::HandleScope scope;
 
@@ -503,6 +510,16 @@ void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
         ResolveFileProgressCallback,
         ResolveFileFinishedCallback);
 
+    Isolate* isolate = args.GetIsolate();
+    Local<ObjectTemplate> state_template = ObjectTemplate::New(isolate);
+    state_template->SetInternalFieldCount(1);
+
+    Local<Object> state_local = state_template->NewInstance();
+    state_local->SetAlignedPointerInInternalField(0, state);
+    state_local->SetAccessor(Nan::New("error_status").ToLocalChecked(), StateStatusErrorGetter<storj_download_state_t>);
+
+    args.GetReturnValue().Set(state_local);
+
 }
 
 // TODO: this is the same as DeleteBucketCallback; refactor
@@ -564,6 +581,7 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::SetPrototypeMethod(constructor, "storeFile", StoreFile);
     Nan::SetPrototypeMethod(constructor, "storeFileCancel", StoreFileCancel);
     Nan::SetPrototypeMethod(constructor, "resolveFile", ResolveFile);
+    Nan::SetPrototypeMethod(constructor, "resolveFileCancel", ResolveFileCancel);
     Nan::SetPrototypeMethod(constructor, "deleteFile", DeleteFile);
 
     Nan::MaybeLocal<v8::Object> maybeInstance;
