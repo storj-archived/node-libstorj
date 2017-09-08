@@ -92,10 +92,13 @@ void GetInfoCallback(uv_work_t *work_req, int status) {
 
 void GetInfo(const Nan::FunctionCallbackInfo<Value>& args) {
     if (args.This()->InternalFieldCount() != 1) {
-        Nan::ThrowError("Environment not available for instance");
+        return Nan::ThrowError("Environment not available for instance");
     }
 
     storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+    if (!env) {
+        return Nan::ThrowError("Environment is not initialized");
+    }
 
     Nan::Callback *callback = new Nan::Callback(args[0].As<Function>());
 
@@ -164,10 +167,13 @@ void ListFilesCallback(uv_work_t *work_req, int status) {
 
 void GetBuckets(const Nan::FunctionCallbackInfo<Value>& args) {
     if (args.This()->InternalFieldCount() != 1) {
-        Nan::ThrowError("Environment not available for instance");
+        return Nan::ThrowError("Environment not available for instance");
     }
 
     storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+    if (!env) {
+        return Nan::ThrowError("Environment is not initialized");
+    }
 
     Nan::Callback *callback = new Nan::Callback(args[0].As<Function>());
 
@@ -176,10 +182,13 @@ void GetBuckets(const Nan::FunctionCallbackInfo<Value>& args) {
 
 void ListFiles(const Nan::FunctionCallbackInfo<Value>& args) {
     if (args.This()->InternalFieldCount() != 1) {
-        Nan::ThrowError("Environment not available for instance");
+        return Nan::ThrowError("Environment not available for instance");
     }
 
     storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+    if (!env) {
+        return Nan::ThrowError("Environment is not initialized");
+    }
 
     String::Utf8Value str(args[0]);
     const char *bucket_id = *str;
@@ -229,10 +238,13 @@ void DeleteBucketCallback(uv_work_t *work_req, int status) {
 
 void CreateBucket(const Nan::FunctionCallbackInfo<Value>& args) {
     if (args.This()->InternalFieldCount() != 1) {
-        Nan::ThrowError("Environment not available for instance");
+        return Nan::ThrowError("Environment not available for instance");
     }
 
     storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+    if (!env) {
+        return Nan::ThrowError("Environment is not initialized");
+    }
 
     String::Utf8Value str(args[0]);
     const char *name = *str;
@@ -245,10 +257,13 @@ void CreateBucket(const Nan::FunctionCallbackInfo<Value>& args) {
 
 void DeleteBucket(const Nan::FunctionCallbackInfo<Value>& args) {
     if (args.This()->InternalFieldCount() != 1) {
-        Nan::ThrowError("Environment not available for instance");
+        return Nan::ThrowError("Environment not available for instance");
     }
 
     storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+    if (!env) {
+        return Nan::ThrowError("Environment is not initialized");
+    }
 
     String::Utf8Value str(args[0]);
     const char *id = *str;
@@ -316,10 +331,13 @@ void StateStatusErrorGetter(Local <String> property, const v8::PropertyCallbackI
 
 void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
     if (args.This()->InternalFieldCount() != 1) {
-        Nan::ThrowError("Environment not available for instance");
+        return Nan::ThrowError("Environment not available for instance");
     }
 
     storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+    if (!env) {
+        return Nan::ThrowError("Environment is not initialized");
+    }
 
     String::Utf8Value bucket_id_str(args[0]);
     const char *bucket_id = *bucket_id_str;
@@ -447,10 +465,13 @@ void ResolveFileProgressCallback(double progress,
 
 void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
     if (args.This()->InternalFieldCount() != 1) {
-        Nan::ThrowError("Environment not available for instance");
+        return Nan::ThrowError("Environment not available for instance");
     }
 
     storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+    if (!env) {
+        return Nan::ThrowError("Environment is not initialized");
+    }
 
     String::Utf8Value bucket_id_str(args[0]);
     const char *bucket_id = *bucket_id_str;
@@ -540,10 +561,13 @@ void DeleteFileCallback(uv_work_t *work_req, int status) {
 
 void DeleteFile(const Nan::FunctionCallbackInfo<Value>& args) {
     if (args.This()->InternalFieldCount() != 1) {
-        Nan::ThrowError("Environment not available for instance");
+        return Nan::ThrowError("Environment not available for instance");
     }
 
     storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+    if (!env) {
+        return Nan::ThrowError("Environment is not initialized");
+    }
 
     String::Utf8Value bucket_id_str(args[0]);
     const char *bucket_id = *bucket_id_str;
@@ -591,7 +615,7 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     maybeInstance = Nan::NewInstance(constructor->GetFunction(), 0, argv);
 
     if (maybeInstance.IsEmpty()) {
-        Nan::ThrowError("Could not create new Storj instance");
+        return Nan::ThrowError("Could not create new Storj instance");
     } else {
         instance = maybeInstance.ToLocalChecked();
     }
@@ -650,6 +674,10 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
                                       &encrypt_options,
                                       &http_options,
                                       &log_options);
+
+    if (!env) {
+        Nan::ThrowError("Environment is not initialized");
+    }
 
     // Pass along the environment so it can be accessed by methods
     instance->SetAlignedPointerInInternalField(0, env);
