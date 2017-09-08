@@ -1,5 +1,7 @@
 # node-libstorj
 
+[![Build Status](https://travis-ci.org/Storj/node-libstorj.svg?branch=master)](https://travis-ci.org/Storj/node-libstorj)
+
 Node.js library for encrypted file transfer on the Storj network.
 
 ## Dependencies
