@@ -582,6 +582,20 @@ void DeleteFile(const Nan::FunctionCallbackInfo<Value>& args) {
     storj_bridge_delete_file(env, bucket_id_dup, file_id_dup, (void *) callback, DeleteFileCallback);
 }
 
+void DestroyEnvironment(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.This()->InternalFieldCount() != 1) {
+        return Nan::ThrowError("Environment not available for instance");
+    }
+
+    storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+    if (!env) {
+        return Nan::ThrowError("Environment is not initialized");
+    }
+
+    if (storj_destroy_env(env)) {
+        Nan::ThrowError("Unable to destroy environment");
+    }
+}
 
 void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::EscapableHandleScope scope;
@@ -607,6 +621,7 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::SetPrototypeMethod(constructor, "resolveFile", ResolveFile);
     Nan::SetPrototypeMethod(constructor, "resolveFileCancel", ResolveFileCancel);
     Nan::SetPrototypeMethod(constructor, "deleteFile", DeleteFile);
+    Nan::SetPrototypeMethod(constructor, "destroy", DestroyEnvironment);
 
     Nan::MaybeLocal<v8::Object> maybeInstance;
     v8::Local<v8::Object> instance;

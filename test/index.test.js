@@ -98,6 +98,7 @@ describe('libstorj', function() {
           return done(err);
         }
         expect(result.info.title).to.equal('Storj Bridge');
+        env.destroy();
         done();
       });
     });
@@ -125,6 +126,7 @@ describe('libstorj', function() {
           expect(result[i].id).to.equal(apiBuckets[i].id);
           expect(result[i].decrypted).to.equal(false);
         }
+        env.destroy();
         done();
       });
     });
@@ -146,6 +148,7 @@ describe('libstorj', function() {
         }
 
         expect(result.name).to.equal(newBucketName);
+        env.destroy();
         done();
       });
     });
@@ -167,6 +170,7 @@ describe('libstorj', function() {
         }
 
         expect(err).to.equal(null);
+        env.destroy();
         done();
       });
     });
@@ -193,6 +197,7 @@ describe('libstorj', function() {
           expect(result[i].mimetype).to.equal(apiFiles[i].mimetype);
           expect(result[i].id).to.equal(apiFiles[i].id);
         }
+        env.destroy();
         done();
       });
     });
@@ -224,6 +229,7 @@ describe('libstorj', function() {
             return done(err);
           }
           console.log('File complete:', fileId);
+          env.destroy();
           done();
         }
       });
@@ -256,6 +262,7 @@ describe('libstorj', function() {
           finished = true;
           expect(err).to.match(/error: file transfer canceled/i);
           expect(state.error_status).to.equal(1);
+          env.destroy();
           done();
         }
       });
@@ -298,6 +305,7 @@ describe('libstorj', function() {
             return done(err);
           }
           console.log('File downloaded');
+          env.destroy();
           done();
         }
       });
@@ -335,6 +343,7 @@ describe('libstorj', function() {
           finished = true;
           expect(state.error_status).to.equal(1);
           // expect(err).to.be.match(//i);
+          env.destroy();
           done();
         }
       });
@@ -364,6 +373,7 @@ describe('libstorj', function() {
         }
 
         expect(err).to.equal(null);
+        env.destroy();
         done();
       });
     });
