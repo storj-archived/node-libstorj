@@ -54,6 +54,7 @@ void MnemonicGenerate(const v8::FunctionCallbackInfo<Value>& args) {
     storj_mnemonic_generate(strength, &mnemonic_result);
     Local<String> mnemonic_local = String::NewFromUtf8(isolate, mnemonic_result);
 
+    free(mnemonic_result);
     args.GetReturnValue().Set(mnemonic_local);
 }
 
@@ -133,8 +134,16 @@ void GetBucketsCallback(uv_work_t *work_req, int status) {
         bucket->Set(Nan::New("decrypted").ToLocalChecked(), Nan::New<Boolean>(req->buckets[i].decrypted));
         buckets->Set(i, bucket);
     }
+
+    Local<Value> error = Nan::Null();
+    if (status > 0) {
+        error = IntToError(status);
+    } else if (req->error_code > 0) {
+        error = IntToError(req->error_code);
+    }
+
     Local<Value> argv[] = {
-        Nan::Null(),
+        error,
         buckets
     };
     callback->Call(2, argv);
@@ -156,8 +165,16 @@ void ListFilesCallback(uv_work_t *work_req, int status) {
         file->Set(Nan::New("id").ToLocalChecked(), Nan::New(req->files[i].id).ToLocalChecked());
         files->Set(i, file);
     }
+
+    Local<Value> error = Nan::Null();
+    if (status > 0) {
+        error = IntToError(status);
+    } else if (req->error_code > 0) {
+        error = IntToError(req->error_code);
+    }
+
     Local<Value> argv[] = {
-        Nan::Null(),
+        error,
         files
     };
     callback->Call(2, argv);
@@ -207,14 +224,21 @@ void CreateBucketCallback(uv_work_t *work_req, int status) {
     Nan::Callback *callback = (Nan::Callback*)req->handle;
     Local<Array> buckets = Nan::New<Array>();
 
-    Local<Object> bucket = Nan::New<Object>();
-    bucket->Set(Nan::New("name").ToLocalChecked(), Nan::New(req->bucket->name).ToLocalChecked());
-    bucket->Set(Nan::New("id").ToLocalChecked(), Nan::New(req->bucket->id).ToLocalChecked());
-    bucket->Set(Nan::New("decrypted").ToLocalChecked(), Nan::New<Boolean>(req->bucket->decrypted));
+    Local<Value> bucket_value = Nan::Null();
+    Local<Value> error = Nan::Null();
+    if (req->error_code > 0) {
+        error = IntToError(req->error_code);
+    } else {
+        Local<Object> bucket_object = Nan::To<Object>(Nan::New<Object>()).ToLocalChecked();
+        bucket_object->Set(Nan::New("name").ToLocalChecked(), Nan::New(req->bucket->name).ToLocalChecked());
+        bucket_object->Set(Nan::New("id").ToLocalChecked(), Nan::New(req->bucket->id).ToLocalChecked());
+        bucket_object->Set(Nan::New("decrypted").ToLocalChecked(), Nan::New<Boolean>(req->bucket->decrypted));
+        bucket_value = bucket_object;
+    }
 
     Local<Value> argv[] = {
-        Nan::Null(),
-        bucket
+        error,
+        bucket_value
     };
     callback->Call(2, argv);
     free(req);
@@ -228,8 +252,15 @@ void DeleteBucketCallback(uv_work_t *work_req, int status) {
 
     Nan::Callback *callback = (Nan::Callback*)req->handle;
 
+    Local<Value> error = Nan::Null();
+    if (status > 0) {
+        error = IntToError(status);
+    } else if (req->error_code > 0) {
+        error = IntToError(req->error_code);
+    }
+
     Local<Value> argv[] = {
-        Nan::Null()
+        error
     };
     callback->Call(1, argv);
     free(req);
@@ -325,8 +356,8 @@ void StateStatusErrorGetter(Local <String> property, const v8::PropertyCallbackI
 
     Local<Object> self = info.Holder();
     StateType *state = (StateType *) self->GetAlignedPointerFromInternalField(0);
-    Local<Integer> error_status = Nan::New<Integer>(state->error_status);
-    info.GetReturnValue().Set(error_status);
+    Local<Value> error = IntToError(state->error_status);
+    info.GetReturnValue().Set(error);
 }
 
 void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
@@ -550,9 +581,15 @@ void DeleteFileCallback(uv_work_t *work_req, int status) {
     json_request_t *req = (json_request_t *) work_req->data;
 
     Nan::Callback *callback = (Nan::Callback*)req->handle;
+    Local<Value> error = Nan::Null();
+    if (status > 0) {
+        error = IntToError(status);
+    } else if (req->error_code > 0) {
+        error = IntToError(req->error_code);
+    }
 
     Local<Value> argv[] = {
-        Nan::Null()
+        error
     };
     callback->Call(1, argv);
     free(req);
