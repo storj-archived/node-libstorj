@@ -157,8 +157,8 @@ describe('libstorj', function() {
 
       env.getBuckets(function (err, result) {
         expect(err).to.be.an('Error');
-        expect(err.message).to.match(/unknown error/i);
-        expect(result).to.be.an('Array').that.is.empty;
+        expect(err.message).to.match(/couldn't resolve host name/i);
+        expect(result).to.be.null;
         done();
       });
     });
@@ -199,7 +199,7 @@ describe('libstorj', function() {
 
       env.createBucket(newBucketName, function (err, result) {
         expect(err).to.be.an('Error');
-        expect(err.message).to.match(/unknown error/i);
+        expect(err.message).to.match(/couldn't resolve host name/i);
         expect(result).to.equal(null);
         done();
       });
@@ -238,7 +238,7 @@ describe('libstorj', function() {
 
       env.deleteBucket(targetBucketId, function (err, result) {
         expect(err).to.be.an('Error');
-        expect(err.message).to.match(/unknown error/i);
+        expect(err.message).to.match(/couldn't resolve host name/i);
         done();
       });
     });
@@ -281,8 +281,8 @@ describe('libstorj', function() {
 
       env.listFiles('368be0816766b28fd5f43af5', function (err, result) {
         expect(err).to.be.an('Error');
-        expect(err.message).to.match(/unknown error/i);
-        expect(result).to.be.an('Array').that.is.empty;
+        expect(err.message).to.match(/couldn't resolve host name/i);
+        expect(result).to.be.null;
         done();
       });
     });
