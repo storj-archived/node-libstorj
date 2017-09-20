@@ -417,7 +417,7 @@ describe('libstorj', function() {
       finishedCallback: function () {}
     };
 
-    it.skip('should upload a file', function(done) {
+    it('should upload a file', function(done) {
       this.timeout(0);
       const env = new libstorj.Environment(defaultConfig);
 
