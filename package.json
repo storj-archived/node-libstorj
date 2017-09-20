@@ -28,11 +28,11 @@
   },
   "homepage": "https://github.com/storj/node-libstorj#readme",
   "dependencies": {
-    "basic-auth": "^2.0.0",
     "bindings": "^1.2.1",
     "nan": "^2.6.2"
   },
   "devDependencies": {
+    "basic-auth": "^2.0.0",
     "body-parser": "^1.17.2",
     "chai": "^4.0.2",
     "express": "^4.15.3",
