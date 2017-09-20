@@ -7,3 +7,4 @@ node_modules/*
 .idea/*
 storj-test-download.data
 storj-test-upload.data
+binding.gyp

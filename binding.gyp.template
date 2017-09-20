@@ -8,6 +8,9 @@
     'sources': [
       'libstorj.cc',
     ],
+    'libraries' : [
+        '<%= libstorjSoPath %>'
+    ],
     'conditions': [
         ['OS=="mac"', {
           'xcode_settings': {
@@ -18,12 +21,5 @@
     ],
     'cflags_cc': [
     ],
-    'link_settings': {
-      'libraries': [
-        '-lstorj'
-      ],
-      'ldflags': [
-      ]
-    }
   }]
 }
