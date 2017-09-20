@@ -4,7 +4,8 @@
   "description": "Node.js bindings to libstorj C library",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/**.test.js --recursive"
+    "test": "./node_modules/.bin/mocha test/**.test.js --recursive",
+    "preinstall": "node ./build.js"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,10 @@
     {
       "name": "Braydon Fuller",
       "url": "https://github.com/braydonf"
+    },
+    {
+      "name": "Bryan White",
+      "url": "https://github.com/bryanchriswhite"
     }
   ],
   "license": "LGPL-3.0",
@@ -28,11 +33,12 @@
   },
   "homepage": "https://github.com/storj/node-libstorj#readme",
   "dependencies": {
-    "basic-auth": "^2.0.0",
     "bindings": "^1.2.1",
+    "lodash": "^4.17.4",
     "nan": "^2.6.2"
   },
   "devDependencies": {
+    "basic-auth": "^2.0.0",
     "body-parser": "^1.17.2",
     "chai": "^4.0.2",
     "express": "^4.15.3",

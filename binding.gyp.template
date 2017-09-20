@@ -9,7 +9,7 @@
       'libstorj.cc',
     ],
     'libraries' : [
-        '/home/user/Projects/node-libstorj/libstorj/build/lib/libstorj.so'
+        '<%= libstorjSoPath %>'
     ],
     'conditions': [
         ['OS=="mac"', {
