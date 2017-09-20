@@ -12,7 +12,7 @@ typedef struct {
     Nan::Callback *finished_callback;
 } transfer_callbacks_t;
 
-Local<Value> IntToError(int error_code) {
+Local<Value> IntToStorjError(int error_code) {
     if (!error_code) {
         return Nan::Null();
     }
@@ -22,6 +22,58 @@ Local<Value> IntToError(int error_code) {
     v8::Local<v8::Value> error = Nan::Error(msg);
 
     return error;
+}
+
+Local<Value> IntToCurlError(int error_code) {
+    const char* error_msg = curl_easy_strerror((CURLcode)error_code);
+    v8::Local<v8::String> msg = Nan::New(error_msg).ToLocalChecked();
+    return Nan::Error(msg);
+}
+
+Local<Value> IntToStatusError(int status_code) {
+    Local<String> error_message;
+    switch(status_code) {
+        case 400:
+            error_message = Nan::New("Bad request").ToLocalChecked();
+            break;
+        case 401:
+            error_message = Nan::New("Not authorized").ToLocalChecked();
+            break;
+        case 404:
+            error_message = Nan::New("Resource not found").ToLocalChecked();
+            break;
+        case 420:
+            error_message = Nan::New("Transfer rate limit").ToLocalChecked();
+            break;
+        case 429:
+            error_message = Nan::New("Request rate limited").ToLocalChecked();
+            break;
+        case 500:
+            error_message = Nan::New("Internal error").ToLocalChecked();
+            break;
+        case 501:
+            error_message = Nan::New("Not implemented").ToLocalChecked();
+            break;
+        case 503:
+            error_message = Nan::New("Service unavailable").ToLocalChecked();
+            break;
+        default:
+            error_message = Nan::New("Unknown status error").ToLocalChecked();
+    }
+    Local<Value> error = Nan::Error(error_message);
+}
+
+template <typename ReqType>
+bool error_and_status_check(ReqType *req, Local<Value> *error) {
+    if (req->error_code) {
+        *error = IntToCurlError(req->error_code);
+    } else if (req->status_code > 399) {
+        *error = IntToStatusError(req->status_code);
+    } else {
+        return true;
+    }
+
+    return false;
 }
 
 void Timestamp(const v8::FunctionCallbackInfo<Value>& args) {
@@ -54,6 +106,7 @@ void MnemonicGenerate(const v8::FunctionCallbackInfo<Value>& args) {
     storj_mnemonic_generate(strength, &mnemonic_result);
     Local<String> mnemonic_local = String::NewFromUtf8(isolate, mnemonic_result);
 
+    free(mnemonic_result);
     args.GetReturnValue().Set(mnemonic_local);
 }
 
@@ -67,15 +120,7 @@ void GetInfoCallback(uv_work_t *work_req, int status) {
     v8::Local<v8::Value> error = Nan::Null();
     v8::Local<Value> result = Nan::Null();
 
-    if (req->error_code || req->response == NULL) {
-        if (req->error_code) {
-            const char* error_msg = curl_easy_strerror((CURLcode)req->error_code);
-            v8::Local<v8::String> msg = Nan::New(error_msg).ToLocalChecked();
-            error = Nan::Error(msg);
-        } else {
-            error = Nan::Error(Nan::New("Failed to get info").ToLocalChecked());
-        }
-    } else {
+    if (error_and_status_check<json_request_t>(req, &error)) {
         const char *result_str = json_object_to_json_string(req->response);
         result = v8::JSON::Parse(Nan::New(result_str).ToLocalChecked());
     }
@@ -124,41 +169,25 @@ void GetBucketsCallback(uv_work_t *work_req, int status) {
     get_buckets_request_t *req = (get_buckets_request_t *) work_req->data;
 
     Nan::Callback *callback = (Nan::Callback*)req->handle;
-    Local<Array> buckets = Nan::New<Array>();
-    for (uint8_t i=0; i<req->total_buckets; i++) {
-        Local<Object> bucket = Nan::New<Object>();
-        bucket->Set(Nan::New("name").ToLocalChecked(), Nan::New(req->buckets[i].name).ToLocalChecked());
-        bucket->Set(Nan::New("created").ToLocalChecked(), StrToDate(req->buckets[i].created));
-        bucket->Set(Nan::New("id").ToLocalChecked(), Nan::New(req->buckets[i].id).ToLocalChecked());
-        bucket->Set(Nan::New("decrypted").ToLocalChecked(), Nan::New<Boolean>(req->buckets[i].decrypted));
-        buckets->Set(i, bucket);
+    Local<Value> buckets_value = Nan::Null();
+    Local<Value> error = Nan::Null();
+
+    if (error_and_status_check<get_buckets_request_t>(req, &error)) {
+        Local<Array> buckets_array = Nan::New<Array>();
+        for (uint8_t i=0; i<req->total_buckets; i++) {
+            Local<Object> bucket = Nan::New<Object>();
+            bucket->Set(Nan::New("name").ToLocalChecked(), Nan::New(req->buckets[i].name).ToLocalChecked());
+            bucket->Set(Nan::New("created").ToLocalChecked(), StrToDate(req->buckets[i].created));
+            bucket->Set(Nan::New("id").ToLocalChecked(), Nan::New(req->buckets[i].id).ToLocalChecked());
+            bucket->Set(Nan::New("decrypted").ToLocalChecked(), Nan::New<Boolean>(req->buckets[i].decrypted));
+            buckets_array->Set(i, bucket);
+        }
+        buckets_value = buckets_array;
     }
+
     Local<Value> argv[] = {
-        Nan::Null(),
-        buckets
-    };
-    callback->Call(2, argv);
-    free(req);
-    free(work_req);
-}
-
-void ListFilesCallback(uv_work_t *work_req, int status) {
-    Nan::HandleScope scope;
-
-    list_files_request_t *req = (list_files_request_t *) work_req->data;
-
-    Nan::Callback *callback = (Nan::Callback*)req->handle;
-    Local<Array> files = Nan::New<Array>();
-    for (uint8_t i=0; i<req->total_files; i++) {
-        Local<Object> file = Nan::New<Object>();
-        file->Set(Nan::New("filename").ToLocalChecked(), Nan::New(req->files[i].filename).ToLocalChecked());
-        file->Set(Nan::New("mimetype").ToLocalChecked(), Nan::New(req->files[i].mimetype).ToLocalChecked());
-        file->Set(Nan::New("id").ToLocalChecked(), Nan::New(req->files[i].id).ToLocalChecked());
-        files->Set(i, file);
-    }
-    Local<Value> argv[] = {
-        Nan::Null(),
-        files
+        error,
+        buckets_value
     };
     callback->Call(2, argv);
     free(req);
@@ -178,6 +207,36 @@ void GetBuckets(const Nan::FunctionCallbackInfo<Value>& args) {
     Nan::Callback *callback = new Nan::Callback(args[0].As<Function>());
 
     storj_bridge_get_buckets(env, (void *) callback, GetBucketsCallback);
+}
+
+void ListFilesCallback(uv_work_t *work_req, int status) {
+    Nan::HandleScope scope;
+
+    list_files_request_t *req = (list_files_request_t *) work_req->data;
+
+    Nan::Callback *callback = (Nan::Callback*)req->handle;
+    Local<Value> files_value = Nan::Null();
+    Local<Value> error = Nan::Null();
+
+    if (error_and_status_check<list_files_request_t>(req, &error)) {
+        Local<Array> files_array = Nan::New<Array>();
+        for (uint8_t i=0; i<req->total_files; i++) {
+            Local<Object> file = Nan::New<Object>();
+            file->Set(Nan::New("filename").ToLocalChecked(), Nan::New(req->files[i].filename).ToLocalChecked());
+            file->Set(Nan::New("mimetype").ToLocalChecked(), Nan::New(req->files[i].mimetype).ToLocalChecked());
+            file->Set(Nan::New("id").ToLocalChecked(), Nan::New(req->files[i].id).ToLocalChecked());
+            files_array->Set(i, file);
+        }
+        files_value = files_array;
+    }
+
+    Local<Value> argv[] = {
+        error,
+        files_value
+    };
+    callback->Call(2, argv);
+    free(req);
+    free(work_req);
 }
 
 void ListFiles(const Nan::FunctionCallbackInfo<Value>& args) {
@@ -207,31 +266,22 @@ void CreateBucketCallback(uv_work_t *work_req, int status) {
     Nan::Callback *callback = (Nan::Callback*)req->handle;
     Local<Array> buckets = Nan::New<Array>();
 
-    Local<Object> bucket = Nan::New<Object>();
-    bucket->Set(Nan::New("name").ToLocalChecked(), Nan::New(req->bucket->name).ToLocalChecked());
-    bucket->Set(Nan::New("id").ToLocalChecked(), Nan::New(req->bucket->id).ToLocalChecked());
-    bucket->Set(Nan::New("decrypted").ToLocalChecked(), Nan::New<Boolean>(req->bucket->decrypted));
+    Local<Value> bucket_value = Nan::Null();
+    Local<Value> error = Nan::Null();
+
+    if (error_and_status_check<create_bucket_request_t>(req, &error)) {
+        Local<Object> bucket_object = Nan::To<Object>(Nan::New<Object>()).ToLocalChecked();
+        bucket_object->Set(Nan::New("name").ToLocalChecked(), Nan::New(req->bucket->name).ToLocalChecked());
+        bucket_object->Set(Nan::New("id").ToLocalChecked(), Nan::New(req->bucket->id).ToLocalChecked());
+        bucket_object->Set(Nan::New("decrypted").ToLocalChecked(), Nan::New<Boolean>(req->bucket->decrypted));
+        bucket_value = bucket_object;
+    }
 
     Local<Value> argv[] = {
-        Nan::Null(),
-        bucket
+        error,
+        bucket_value
     };
     callback->Call(2, argv);
-    free(req);
-    free(work_req);
-}
-
-void DeleteBucketCallback(uv_work_t *work_req, int status) {
-    Nan::HandleScope scope;
-
-    json_request_t *req = (json_request_t *) work_req->data;
-
-    Nan::Callback *callback = (Nan::Callback*)req->handle;
-
-    Local<Value> argv[] = {
-        Nan::Null()
-    };
-    callback->Call(1, argv);
     free(req);
     free(work_req);
 }
@@ -253,6 +303,24 @@ void CreateBucket(const Nan::FunctionCallbackInfo<Value>& args) {
     Nan::Callback *callback = new Nan::Callback(args[1].As<Function>());
 
     storj_bridge_create_bucket(env, name_dup, (void *) callback, CreateBucketCallback);
+}
+
+void DeleteBucketCallback(uv_work_t *work_req, int status) {
+    Nan::HandleScope scope;
+
+    json_request_t *req = (json_request_t *) work_req->data;
+
+    Nan::Callback *callback = (Nan::Callback*)req->handle;
+    Local<Value> error = Nan::Null();
+
+    error_and_status_check<json_request_t>(req, &error);
+
+    Local<Value> argv[] = {
+        error
+    };
+    callback->Call(1, argv);
+    free(req);
+    free(work_req);
 }
 
 void DeleteBucket(const Nan::FunctionCallbackInfo<Value>& args) {
@@ -285,7 +353,7 @@ void StoreFileFinishedCallback(int status, char *file_id, void *handle) {
         file_id_local = Nan::New(file_id).ToLocalChecked();
     }
 
-    Local<Value> error = IntToError(status);
+    Local<Value> error = IntToStorjError(status);
 
     Local<Value> argv[] = {
         error,
@@ -325,8 +393,8 @@ void StateStatusErrorGetter(Local <String> property, const v8::PropertyCallbackI
 
     Local<Object> self = info.Holder();
     StateType *state = (StateType *) self->GetAlignedPointerFromInternalField(0);
-    Local<Integer> error_status = Nan::New<Integer>(state->error_status);
-    info.GetReturnValue().Set(error_status);
+    Local<Value> error = IntToStorjError(state->error_status);
+    info.GetReturnValue().Set(error);
 }
 
 void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
@@ -432,7 +500,7 @@ void ResolveFileFinishedCallback(int status, FILE *fd, void *handle) {
     transfer_callbacks_t *download_callbacks = (transfer_callbacks_t *) handle;
     Nan::Callback *callback = download_callbacks->finished_callback;
 
-    Local<Value> error = IntToError(status);
+    Local<Value> error = IntToStorjError(status);
 
     Local<Value> argv[] = {
         error
@@ -550,9 +618,12 @@ void DeleteFileCallback(uv_work_t *work_req, int status) {
     json_request_t *req = (json_request_t *) work_req->data;
 
     Nan::Callback *callback = (Nan::Callback*)req->handle;
+    Local<Value> error = Nan::Null();
+
+    error_and_status_check<json_request_t>(req, &error);
 
     Local<Value> argv[] = {
-        Nan::Null()
+        error
     };
     callback->Call(1, argv);
     free(req);
@@ -606,6 +677,8 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     v8::Local<v8::String> bridgeUser = options->Get(Nan::New("bridgeUser").ToLocalChecked()).As<v8::String>();
     v8::Local<v8::String> bridgePass = options->Get(Nan::New("bridgePass").ToLocalChecked()).As<v8::String>();
     v8::Local<v8::String> encryptionKey = options->Get(Nan::New("encryptionKey").ToLocalChecked()).As<v8::String>();
+    Nan::MaybeLocal<Value> user_agent = options->Get(Nan::New("userAgent").ToLocalChecked());
+//    String::Utf8Value user_agent_str(user_agent.ToLocalChecked());
 
     v8::Local<v8::FunctionTemplate> constructor = Nan::New<v8::FunctionTemplate>();
     constructor->SetClassName(Nan::New("Environment").ToLocalChecked());
@@ -673,7 +746,12 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     encrypt_options.mnemonic = mnemonic;
 
     storj_http_options_t http_options = {};
-    http_options.user_agent = "storj-test";
+    if (!user_agent.IsEmpty()) {
+        String::Utf8Value str(user_agent.ToLocalChecked());
+        http_options.user_agent = strdup(*str);
+    } else {
+        http_options.user_agent = "storj-test";
+    }
     http_options.low_speed_limit = STORJ_LOW_SPEED_LIMIT;
     http_options.low_speed_time = STORJ_LOW_SPEED_TIME;
     http_options.timeout = STORJ_HTTP_TIMEOUT;

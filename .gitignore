@@ -1,2 +1,9 @@
 build/*
 node_modules/*
+.valgrindrc
+*.supp
+*.log
+*.log.*
+.idea/*
+storj-test-download.data
+storj-test-upload.data
