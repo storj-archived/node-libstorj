@@ -218,10 +218,16 @@ const itBehavesLikeAuthenticatedRequestWithMultipleCallbacks = function (method,
 };
 
 describe('libstorj', function() {
+  const storeFilePath = './storj-test-upload.data';
   let server;
   let farmer;
 
   before(function(done) {
+    this.timeout(10000);
+    process.stdout.write('Creating dummy data; this might take a few seconds...');
+    createUploadFile(storeFilePath);
+    console.log('done!');
+
     server = mockbridge.listen(3000, function(err) {
       if (err) {
         console.error(err);
@@ -409,7 +415,6 @@ describe('libstorj', function() {
 
   describe('#storeFile', function() {
     const bucketId = '368be0816766b28fd5f43af5';
-    const filePath = './storj-test-upload.data';
     const defaultOptions = {
       filename: 'storj-test-upload.data',
       index: 'd2891da46d9c3bf42ad619ceddc1b6621f83e6cb74e6b6b6bc96bdbfaefb8692',
@@ -421,7 +426,6 @@ describe('libstorj', function() {
       this.timeout(0);
       const env = new libstorj.Environment(defaultConfig);
 
-      createUploadFile(filePath);
 
       const options = shallowCopy(defaultOptions);
       options.finishedCallback = function (err, fileId) {
@@ -433,10 +437,10 @@ describe('libstorj', function() {
         done();
       };
 
-      env.storeFile(bucketId, filePath, options);
+      env.storeFile(bucketId, storeFilePath, options);
     });
 
-    itBehavesLikeCurlRequestWithMultipleCallbacks('storeFile', [bucketId, filePath, shallowCopy(defaultOptions)]);
+    itBehavesLikeCurlRequestWithMultipleCallbacks('storeFile', [bucketId, storeFilePath, shallowCopy(defaultOptions)]);
   });
 
   describe('#storeFileCancel', function () {
@@ -445,14 +449,11 @@ describe('libstorj', function() {
       const env = new libstorj.Environment(defaultConfig);
 
       const bucketId = '368be0816766b28fd5f43af5';
-      const filePath = './storj-test-upload.data';
-
-      createUploadFile(filePath);
 
       let finished = false;
       const errorMessageRegex = /file transfer canceled/i;
 
-      const state = env.storeFile(bucketId, filePath, {
+      const state = env.storeFile(bucketId, storeFilePath, {
         filename: 'storj-test-upload.data',
         index: 'd2891da46d9c3bf42ad619ceddc1b6621f83e6cb74e6b6b6bc96bdbfaefb8692',
         progressCallback: function () {},
