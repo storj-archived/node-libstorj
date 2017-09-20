@@ -81,15 +81,101 @@ const itBehavesLikeNonAuthedCurlRequest = function (method, args) {
   });
 };
 
-const itBehavesLikeCurlRequest = function (method, args) {
+const itBehavesLikeCurlRequest = function (method, initialArgs) {
   // TODO: test supported http status error codes;
   // i.e. 400, 404, 420, 429, 500, 501, 503
   it('should pass a `bad request` error to the callback', function (done) {
     const env = new libstorj.Environment(statusCodeConfig(400));
+    const args = [].concat(initialArgs);
 
     args.push(function (err) {
       expect(err).to.be.an('Error');
       expect(err.message).to.match(/bad request/i);
+      env.destroy();
+      done();
+    });
+
+    env[method].apply(env, args);
+  });
+
+
+  it('should pass a `resource not found` error to the callback', function (done) {
+    const env = new libstorj.Environment(statusCodeConfig(404));
+    const args = [].concat(initialArgs);
+
+    args.push(function (err) {
+      expect(err).to.be.an('Error');
+      expect(err.message).to.match(/resource not found/i);
+      env.destroy();
+      done();
+    });
+
+    env[method].apply(env, args);
+  });
+
+  it('should pass a `transfer rate limit` error to the callback', function (done) {
+    const env = new libstorj.Environment(statusCodeConfig(420));
+    const args = [].concat(initialArgs);
+
+    args.push(function (err) {
+      expect(err).to.be.an('Error');
+      expect(err.message).to.match(/transfer rate limit/i);
+      env.destroy();
+      done();
+    });
+
+    env[method].apply(env, args);
+  });
+
+  it('should pass a `request rate limited` error to the callback', function (done) {
+    const env = new libstorj.Environment(statusCodeConfig(429));
+    const args = [].concat(initialArgs);
+
+    args.push(function (err) {
+      expect(err).to.be.an('Error');
+      expect(err.message).to.match(/request rate limited/i);
+      env.destroy();
+      done();
+    });
+
+    env[method].apply(env, args);
+  });
+
+  it('should pass a `internal error` error to the callback', function (done) {
+    const env = new libstorj.Environment(statusCodeConfig(500));
+    const args = [].concat(initialArgs);
+
+    args.push(function (err) {
+      expect(err).to.be.an('Error');
+      expect(err.message).to.match(/internal error/i);
+      env.destroy();
+      done();
+    });
+
+    env[method].apply(env, args);
+  });
+
+  it('should pass a `not implemented` error to the callback', function (done) {
+    const env = new libstorj.Environment(statusCodeConfig(501));
+    const args = [].concat(initialArgs);
+
+    args.push(function (err) {
+      expect(err).to.be.an('Error');
+      expect(err.message).to.match(/not implemented/i);
+      env.destroy();
+      done();
+    });
+
+    env[method].apply(env, args);
+  });
+
+  it('should pass a `service unavailable` error to the callback', function (done) {
+    const env = new libstorj.Environment(statusCodeConfig(503));
+    const args = [].concat(initialArgs);
+
+    args.push(function (err) {
+      expect(err).to.be.an('Error');
+      expect(err.message).to.match(/service unavailable/i);
       env.destroy();
       done();
     });
