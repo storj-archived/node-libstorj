@@ -7,6 +7,129 @@ const libstorj = require('..');
 const mockbridge = require('./mockbridge.js');
 const mockfarmer = require('./mockfarmer.js');
 const mockbridgeData = require('./mockbridge.json');
+const shallowCopy = function (target) {
+  return Object.assign({}, target);
+};
+
+const defaultConfig = {
+  bridgeUrl: 'http://localhost:3000',
+  bridgeUser: 'testuser@storj.io',
+  bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
+  encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+};
+
+const badHostnameConfig = {
+  bridgeUrl: 'http://nonexistant.example',
+  bridgeUser: 'testuser@storj.io',
+  bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
+  encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+};
+
+const badPasswordConfig = {
+  bridgeUrl: 'http://localhost:3000',
+  bridgeUser: 'testuser@storj.io',
+  bridgePass: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+  encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+};
+
+const badKeyConfig = {
+  bridgeUrl: 'http://localhost:3000',
+  bridgeUser: 'testuser@storj.io',
+  bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
+  encryptionKey: 'aaaaaaa aaaaaaa aaaaaaa aaaaaaa aaaaaaa aaaaaaa aaaaaaa aaaaaaa aaaaaaa aaaaaaa aaaaaaa aaaaa'
+};
+
+const statusCodeConfig = function (status) {
+  const config = shallowCopy(defaultConfig);
+  config.userAgent = `storj-test_status-${status}`;
+  return config;
+};
+
+const itBehavesLikeAuthenticatedRequest = function (method, args, nullResult) {
+  it('should require authorization', function (done) {
+    const env = new libstorj.Environment(badPasswordConfig);
+
+    args.push(function (err, result) {
+      expect(err).to.be.an('Error');
+      expect(err.message).to.match(/not authorized/i);
+      if (nullResult) {
+        expect(result).to.be.null;
+      }
+      env.destroy();
+      done();
+    });
+
+    env[method].apply(env, args);
+  });
+
+};
+
+const itBehavesLikeNonAuthedCurlRequest = function (method, args) {
+  // TODO: test supported http status error codes;
+  // i.e. 400, 404, 420, 429, 500, 501, 503
+  it('should pass a `bad request` error to the callback', function (done) {
+    const env = new libstorj.Environment(statusCodeConfig(400));
+
+    args.push(function (err) {
+      expect(err).to.be.an('Error');
+      expect(err.message).to.match(/bad request/i);
+      env.destroy();
+      done();
+    });
+
+    env[method].apply(env, args);
+  });
+};
+
+const itBehavesLikeCurlRequest = function (method, args) {
+  // TODO: test supported http status error codes;
+  // i.e. 400, 404, 420, 429, 500, 501, 503
+  it('should pass a `bad request` error to the callback', function (done) {
+    const env = new libstorj.Environment(statusCodeConfig(400));
+
+    args.push(function (err) {
+      expect(err).to.be.an('Error');
+      expect(err.message).to.match(/bad request/i);
+      env.destroy();
+      done();
+    });
+
+    env[method].apply(env, args);
+  });
+};
+
+const itBehavesLikeCurlRequestWithMultipleCallbacks = function (method, args) {
+  it('should pass curl errors to the finished callback', function (done) {
+    const env = new libstorj.Environment(badHostnameConfig);
+
+    args[args.length - 1].finishedCallback = function (err) {
+      expect(err).to.be.an('Error');
+      expect(err.message).to.match(/bridge request( pointer)? error/i);
+      env.destroy();
+      done();
+    };
+
+    env[method].apply(env, args);
+  });
+};
+
+const itBehavesLikeAuthenticatedRequestWithMultipleCallbacks = function (method, args, nullResult) {
+  it('should require authentication', function (done) {
+    const env = new libstorj.Environment(badPasswordConfig);
+
+    args[args.length - 1].finishedCallback = function (err, result) {
+      expect(err).to.be.an('Error');
+      expect(err.message).to.match(/bridge request authorization error/i);
+      if (nullResult) {
+        expect(result).to.be.null;
+      }
+      env.destroy();
+      done();
+    };
+
+    env[method].apply(env, args);
+  });
+};
 
 describe('libstorj', function() {
   let server;
@@ -86,12 +209,7 @@ describe('libstorj', function() {
 
   describe('#getInfo', function() {
     it('should get info about the bridge', function(done) {
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://localhost:3000',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
+      const env = new libstorj.Environment(defaultConfig);
 
       env.getInfo(function(err, result) {
         if (err) {
@@ -103,31 +221,12 @@ describe('libstorj', function() {
       });
     });
 
-    it('should pass errors to the callback', function (done) {
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://nonexistant.example',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
-
-      env.getInfo(function (err, result) {
-        expect(err).to.be.an('Error');
-        expect(err.message).to.match(/couldn't resolve host name/i);
-        expect(result).to.equal(null);
-        done();
-      });
-    });
+    itBehavesLikeNonAuthedCurlRequest('getInfo', []);
   });
 
   describe('#getBuckets', function() {
     it('should get a list of buckets', function(done) {
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://localhost:3000',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
+      const env = new libstorj.Environment(defaultConfig);
 
       env.getBuckets(function(err, result) {
         if (err) {
@@ -147,33 +246,15 @@ describe('libstorj', function() {
       });
     });
 
-    it('should pass errors to the callback', function (done) {
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://nonexistant.example',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
-
-      env.getBuckets(function (err, result) {
-        expect(err).to.be.an('Error');
-        expect(err.message).to.match(/couldn't resolve host name/i);
-        expect(result).to.be.null;
-        done();
-      });
-    });
+    itBehavesLikeCurlRequest('getBuckets', []);
+    itBehavesLikeAuthenticatedRequest('getBuckets', [], true)
   });
 
   describe('#createBucket', function() {
     const newBucketName = 'test-bucket';
 
     it('should create a new bucket', function(done) {
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://localhost:3000',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
+      const env = new libstorj.Environment(defaultConfig);
 
       env.createBucket(newBucketName, function(err, result) {
         if (err) {
@@ -189,33 +270,15 @@ describe('libstorj', function() {
       });
     });
 
-    it('should pass errors to the callback', function (done) {
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://nonexistant.example',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
-
-      env.createBucket(newBucketName, function (err, result) {
-        expect(err).to.be.an('Error');
-        expect(err.message).to.match(/couldn't resolve host name/i);
-        expect(result).to.equal(null);
-        done();
-      });
-    });
+    itBehavesLikeCurlRequest('createBucket', [newBucketName]);
+    itBehavesLikeAuthenticatedRequest('createBucket', [newBucketName], true);
   });
 
   describe('#deleteBucket', function () {
     const targetBucketId = '368be0816766b28fd5f43af5';
 
     it('should delete the specified bucket', function (done) {
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://localhost:3000',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
+      const env = new libstorj.Environment(defaultConfig);
 
       env.deleteBucket(targetBucketId, function (err) {
         if (err) {
@@ -228,30 +291,13 @@ describe('libstorj', function() {
       });
     });
 
-    it('should pass errors to the callback', function (done) {
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://nonexistant.example',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
-
-      env.deleteBucket(targetBucketId, function (err, result) {
-        expect(err).to.be.an('Error');
-        expect(err.message).to.match(/couldn't resolve host name/i);
-        done();
-      });
-    });
+    itBehavesLikeCurlRequest('deleteBucket', [targetBucketId]);
+    itBehavesLikeAuthenticatedRequest('deleteBucket', [targetBucketId]);
   });
 
   describe('#listFiles', function () {
     it('should get a list of files for the specified bucket', function (done) {
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://localhost:3000',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
+      const env = new libstorj.Environment(defaultConfig);
 
       env.listFiles('368be0816766b28fd5f43af5', function (err, result) {
         if (err) {
@@ -271,84 +317,46 @@ describe('libstorj', function() {
     });
 
 
-    it('should pass errors to the callback', function (done) {
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://nonexistant.example',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
-
-      env.listFiles('368be0816766b28fd5f43af5', function (err, result) {
-        expect(err).to.be.an('Error');
-        expect(err.message).to.match(/couldn't resolve host name/i);
-        expect(result).to.be.null;
-        done();
-      });
-    });
+    itBehavesLikeCurlRequest('listFiles', ['368be0816766b28fd5f43af5']);
+    itBehavesLikeAuthenticatedRequest('listFiles', ['368be0816766b28fd5f43af5'], true);
   });
 
   describe('#storeFile', function() {
     const bucketId = '368be0816766b28fd5f43af5';
     const filePath = './storj-test-upload.data';
+    const defaultOptions = {
+      filename: 'storj-test-upload.data',
+      index: 'd2891da46d9c3bf42ad619ceddc1b6621f83e6cb74e6b6b6bc96bdbfaefb8692',
+      progressCallback: function () {},
+      finishedCallback: function () {}
+    };
 
-    it('should upload a file', function(done) {
+    it.skip('should upload a file', function(done) {
       this.timeout(0);
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://localhost:3000',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
+      const env = new libstorj.Environment(defaultConfig);
 
       createUploadFile(filePath);
 
-      env.storeFile(bucketId, filePath, {
-        filename: 'storj-test-upload.data',
-        index: 'd2891da46d9c3bf42ad619ceddc1b6621f83e6cb74e6b6b6bc96bdbfaefb8692',
-        progressCallback: function() {},
-        finishedCallback: function(err, fileId) {
-          if (err) {
-            return done(err);
-          }
-          console.log('File complete:', fileId);
-          env.destroy();
-          done();
+      const options = shallowCopy(defaultOptions);
+      options.finishedCallback = function (err, fileId) {
+        if (err) {
+          return done(err);
         }
-      });
+        console.log('File complete:', fileId);
+        env.destroy();
+        done();
+      };
+
+      env.storeFile(bucketId, filePath, options);
     });
 
-    it('should pass errors to the callback', function (done) {
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://nonexistant.example',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
-
-      env.storeFile(bucketId, filePath, {
-        filename: 'storj-test-upload.data',
-        index: 'd2891da46d9c3bf42ad619ceddc1b6621f83e6cb74e6b6b6bc96bdbfaefb8692',
-        progressCallback: function() {},
-        finishedCallback: function(err, fileId) {
-          expect(err).to.be.an('Error');
-          expect(err.message).to.match(/bridge request error/i);
-          env.destroy();
-          done();
-        }
-      });
-    });
+    itBehavesLikeCurlRequestWithMultipleCallbacks('storeFile', [bucketId, filePath, shallowCopy(defaultOptions)]);
   });
 
   describe('#storeFileCancel', function () {
     it('should cancel the specified state\'s upload', function (done) {
       this.timeout(0);
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://localhost:3000',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
+      const env = new libstorj.Environment(defaultConfig);
 
       const bucketId = '368be0816766b28fd5f43af5';
       const filePath = './storj-test-upload.data';
@@ -382,7 +390,7 @@ describe('libstorj', function() {
   describe('#resolveFile', function() {
     const filePath = './storj-test-download.data';
 
-    before(function() {
+    beforeEach(function() {
       const fs = require('fs');
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
@@ -392,47 +400,29 @@ describe('libstorj', function() {
     const bucketId = '368be0816766b28fd5f43af5';
     const fileId = '998960317b6725a3f8080c2b';
 
+    const defaultOptions = {
+      progressCallback: function () {},
+      finishedCallback: function () {}
+    };
+
     it.skip('should download a file', function(done) {
       this.timeout(0);
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://localhost:3000',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
-
-
-      env.resolveFile(bucketId, fileId, filePath, {
-        progressCallback: function() {},
-        finishedCallback: function(err) {
+      const env = new libstorj.Environment(defaultConfig);
+      const options = shallowCopy(defaultOptions);
+      options.finishedCallback = function(err) {
           if (err) {
             return done(err);
           }
           console.log('File downloaded');
           env.destroy();
           done();
-        }
-      });
+        };
+
+      env.resolveFile(bucketId, fileId, filePath, options);
     });
 
-    it('should pass errors to the callback', function (done) {
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://nonexistant.example',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
-
-      env.resolveFile(bucketId, fileId, filePath, {
-        progressCallback: function() {},
-        finishedCallback: function(err) {
-          expect(err).to.be.an('Error');
-          expect(err.message).to.match(/bridge request( pointer)? error/i);
-          env.destroy();
-          done();
-        }
-      });
-    });
+    itBehavesLikeCurlRequestWithMultipleCallbacks('resolveFile', [bucketId, fileId, filePath, shallowCopy(defaultOptions)]);
+    itBehavesLikeAuthenticatedRequestWithMultipleCallbacks('resolveFile', [bucketId, fileId, filePath, shallowCopy(defaultOptions)]);
   });
 
   describe('#resolveFileCancel', function () {
@@ -447,12 +437,7 @@ describe('libstorj', function() {
 
     it('should cancel the specified state\'s upload', function (done) {
       this.timeout(0);
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://localhost:3000',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
+      const env = new libstorj.Environment(defaultConfig);
 
       const bucketId = '368be0816766b28fd5f43af5';
       const fileId = '998960317b6725a3f8080c2b';
@@ -486,12 +471,7 @@ describe('libstorj', function() {
     const targetFileId = '998960317b6725a3f8080c2b';
 
     it('should delete the specified file from the specified bucket', function (done) {
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://localhost:3000',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
+      const env = new libstorj.Environment(defaultConfig);
 
       env.deleteFile(targetBucketId, targetFileId, function (err) {
         if (err) {
@@ -504,21 +484,8 @@ describe('libstorj', function() {
       });
     });
 
-    it('should pass errors to the callback', function (done) {
-      const env = new libstorj.Environment({
-        bridgeUrl: 'http://nonexistant.example',
-        bridgeUser: 'testuser@storj.io',
-        bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-        encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-      });
-
-      env.deleteFile(targetBucketId, targetFileId, function (err) {
-        expect(err).to.be.an('Error');
-        expect(err.message).to.match(/unknown error/i);
-        env.destroy();
-        done();
-      });
-    });
+    itBehavesLikeCurlRequest('deleteFile', [targetBucketId, targetFileId]);
+    itBehavesLikeAuthenticatedRequest('deleteFile', [targetBucketId, targetFileId]);
   });
 });
 
