@@ -3,7 +3,10 @@
     'target_name': 'libstorj',
     'include_dirs' : [
       '<!(node -e "require(\'nan\')")',
-      'storj.h',
+      '/home/bgf/storj/libstorj-c/release/x86_64-pc-linux-gnu/include'
+    ],
+    'libraries': [
+      '/home/bgf/storj/libstorj-c/release/x86_64-pc-linux-gnu/lib/libstorj.a',
     ],
     'sources': [
       'libstorj.cc',
@@ -20,9 +23,9 @@
     ],
     'link_settings': {
       'libraries': [
-        '-lstorj'
       ],
       'ldflags': [
+        '-Wl,--whole-archive /home/bgf/storj/libstorj-c/depends/build/x86_64-pc-linux-gnu/lib/libnettle.a -Wl,--whole-archive /home/bgf/storj/libstorj-c/depends/build/x86_64-pc-linux-gnu/lib/libgnutls.a -Wl,--whole-archive /home/bgf/storj/libstorj-c/depends/build/x86_64-pc-linux-gnu/lib/libhogweed.a -Wl,--whole-archive /home/bgf/storj/libstorj-c/depends/build/x86_64-pc-linux-gnu/lib/libjson-c.a -Wl,--whole-archive /home/bgf/storj/libstorj-c/depends/build/x86_64-pc-linux-gnu/lib/libgmp.a -Wl,--whole-archive /home/bgf/storj/libstorj-c/depends/build/x86_64-pc-linux-gnu/lib/libcurl.a -Wl,--no-whole-archive'
       ]
     }
   }]
