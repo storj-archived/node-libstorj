@@ -668,6 +668,15 @@ void DestroyEnvironment(const Nan::FunctionCallbackInfo<Value>& args) {
     }
 }
 
+void FreeEnvironmentCallback(const Nan::WeakCallbackInfo<storj_env_t> &data) {
+    storj_env_t *env = data.GetParameter();
+    if (env) {
+        if (storj_destroy_env(env)) {
+            Nan::ThrowError("Unable to destroy environment");
+        }
+    }
+}
+
 void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::EscapableHandleScope scope;
 
@@ -775,7 +784,10 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     // Pass along the environment so it can be accessed by methods
     instance->SetAlignedPointerInInternalField(0, env);
 
-    args.GetReturnValue().Set(scope.Escape(instance));
+    Nan::Persistent<v8::Object> persistent(instance);
+    persistent.SetWeak(env, FreeEnvironmentCallback, WeakCallbackType::kParameter);
+
+    args.GetReturnValue().Set(persistent);
 }
 
 void init(Handle<Object> exports) {
