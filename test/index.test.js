@@ -414,6 +414,7 @@ describe('libstorj', function() {
   });
 
   describe('#storeFile', function() {
+    this.timeout(0);
     const bucketId = '368be0816766b28fd5f43af5';
     const defaultOptions = {
       filename: 'storj-test-upload.data',
@@ -475,6 +476,7 @@ describe('libstorj', function() {
   });
 
   describe('#resolveFile', function() {
+    this.timeout(0);
     const filePath = './storj-test-download.data';
 
     beforeEach(function() {
