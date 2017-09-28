@@ -3,7 +3,10 @@
     'target_name': 'libstorj',
     'include_dirs' : [
       '<!(node -e "require(\'nan\')")',
-      'storj.h',
+      '<!(node ./binding.js include_dirs)'
+    ],
+    'libraries': [
+      '<!(node ./binding.js libraries)'
     ],
     'sources': [
       'libstorj.cc',
@@ -19,10 +22,8 @@
     'cflags_cc': [
     ],
     'link_settings': {
-      'libraries': [
-        '-lstorj'
-      ],
       'ldflags': [
+        '<!(node ./binding.js ldflags)'
       ]
     }
   }]
