@@ -12,6 +12,11 @@ typedef struct {
     Nan::Callback *finished_callback;
 } transfer_callbacks_t;
 
+extern "C" void JsonLogger(const char *message, int level, void *handle) {
+    printf("{\"message\": \"%s\", \"level\": %i, \"timestamp\": %" PRIu64 "}\n",
+           message, level, storj_util_timestamp());
+}
+
 Local<Value> IntToStorjError(int error_code) {
     if (!error_code) {
         return Nan::Null();
@@ -766,8 +771,10 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     http_options.timeout = STORJ_HTTP_TIMEOUT;
     http_options.cainfo_path = NULL;
 
-    storj_log_options_t log_options = {};
-    log_options.logger = NULL;
+    static storj_log_options_t log_options = {};
+    log_options.logger = JsonLogger;
+
+    // TODO configurable log level
     log_options.level = 0;
 
     // Initialize environment
