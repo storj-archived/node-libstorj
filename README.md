@@ -127,5 +127,5 @@ Once finished, you should call:
 ```js
 storj.destroy();
 ```
-*Note: This will make sure to zero and free memory holding encryption keys and environement settings*
+*Note: This will make sure to zero and free memory holding encryption keys and environment settings*
 
