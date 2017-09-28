@@ -66,6 +66,7 @@ Local<Value> IntToStatusError(int status_code) {
             error_message = Nan::New("Unknown status error").ToLocalChecked();
     }
     Local<Value> error = Nan::Error(error_message);
+    return error;
 }
 
 template <typename ReqType>
@@ -269,7 +270,6 @@ void CreateBucketCallback(uv_work_t *work_req, int status) {
     create_bucket_request_t *req = (create_bucket_request_t *) work_req->data;
 
     Nan::Callback *callback = (Nan::Callback*)req->handle;
-    Local<Array> buckets = Nan::New<Array>();
 
     Local<Value> bucket_value = Nan::Null();
     Local<Value> error = Nan::Null();
@@ -392,10 +392,6 @@ void StoreFileProgressCallback(double progress, uint64_t downloaded_bytes, uint6
 
 template<class StateType>
 void StateStatusErrorGetter(Local <String> property, const v8::PropertyCallbackInfo <Value> &info) {
-    String::Utf8Value str(property);
-    const char *property_str = *str;
-    const char *property_dup = strdup(property_str);
-
     Local<Object> self = info.Holder();
     StateType *state = (StateType *) self->GetAlignedPointerFromInternalField(0);
     Local<Value> error = IntToStorjError(state->error_status);
@@ -471,6 +467,10 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
         (void *) upload_callbacks,
         StoreFileProgressCallback,
         StoreFileFinishedCallback);
+
+    if (status) {
+        // TODO give back an error
+    }
 
     Isolate* isolate = args.GetIsolate();
     Local<ObjectTemplate> state_template = ObjectTemplate::New(isolate);
@@ -605,6 +605,10 @@ void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
         (void *) download_callbacks,
         ResolveFileProgressCallback,
         ResolveFileFinishedCallback);
+
+    if (status) {
+        // TODO give back an error
+    }
 
     Isolate* isolate = args.GetIsolate();
     Local<ObjectTemplate> state_template = ObjectTemplate::New(isolate);
