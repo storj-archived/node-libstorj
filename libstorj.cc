@@ -396,7 +396,7 @@ void StoreFileProgressCallback(double progress, uint64_t downloaded_bytes, uint6
 }
 
 template<class StateType>
-void StateStatusErrorGetter(Local <String> property, const v8::PropertyCallbackInfo <Value> &info) {
+void StateStatusErrorGetter(Local<String> property, const Nan::PropertyCallbackInfo <Value> &info) {
     Local<Object> self = info.Holder();
     StateType *state = (StateType *) self->GetAlignedPointerFromInternalField(0);
     Local<Value> error = IntToStorjError(state->error_status);
@@ -483,7 +483,8 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
 
     Local<Object> state_local = state_template->NewInstance();
     state_local->SetAlignedPointerInInternalField(0, state);
-    state_local->SetAccessor(Nan::New("error_status").ToLocalChecked(), StateStatusErrorGetter<storj_upload_state_t>);
+    Nan::SetAccessor(state_local, Nan::New("error_status").ToLocalChecked(),
+                     StateStatusErrorGetter<storj_upload_state_t>);
 
     args.GetReturnValue().Set(state_local);
 }
@@ -621,7 +622,8 @@ void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
 
     Local<Object> state_local = state_template->NewInstance();
     state_local->SetAlignedPointerInInternalField(0, state);
-    state_local->SetAccessor(Nan::New("error_status").ToLocalChecked(), StateStatusErrorGetter<storj_download_state_t>);
+    Nan::SetAccessor(state_local, Nan::New("error_status").ToLocalChecked(),
+                     StateStatusErrorGetter<storj_download_state_t>);
 
     args.GetReturnValue().Set(state_local);
 
