@@ -564,8 +564,10 @@ void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
 
     if (file_path) {
         if(access(file_path, F_OK) != -1 ) {
+            // TODO give error in callback that file exists
             printf("Warning: File already exists at path [%s].\n", file_path);
 
+            // TODO have this be an option
             bool overwrite = false;
             if (overwrite) {
                 unlink(file_path);
@@ -582,7 +584,7 @@ void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
     }
 
     if (fd == NULL) {
-        // TODO send to stderr
+        // TODO give error in callback
         printf("Unable to open %s: %s\n", file_path, strerror(errno));
         return;
     }
