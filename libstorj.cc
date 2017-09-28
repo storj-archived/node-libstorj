@@ -785,6 +785,8 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     instance->SetAlignedPointerInInternalField(0, env);
 
     Nan::Persistent<v8::Object> persistent(instance);
+
+    // There is no guarantee that the free callback will be called
     persistent.SetWeak(env, FreeEnvironmentCallback, WeakCallbackType::kParameter);
     persistent.MarkIndependent();
     Nan::AdjustExternalMemory(sizeof(storj_env_t));
