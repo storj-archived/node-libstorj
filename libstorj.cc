@@ -670,10 +670,8 @@ void DestroyEnvironment(const Nan::FunctionCallbackInfo<Value>& args) {
 
 void FreeEnvironmentCallback(const Nan::WeakCallbackInfo<storj_env_t> &data) {
     storj_env_t *env = data.GetParameter();
-    if (env) {
-        if (storj_destroy_env(env)) {
-            Nan::ThrowError("Unable to destroy environment");
-        }
+    if (env && storj_destroy_env(env)) {
+        Nan::ThrowError("Unable to destroy environment");
     }
 }
 
@@ -786,6 +784,8 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
 
     Nan::Persistent<v8::Object> persistent(instance);
     persistent.SetWeak(env, FreeEnvironmentCallback, WeakCallbackType::kParameter);
+    persistent.MarkIndependent();
+    Nan::AdjustExternalMemory(sizeof(storj_env_t));
 
     args.GetReturnValue().Set(persistent);
 }
