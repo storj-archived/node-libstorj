@@ -4,7 +4,8 @@ const storj = new libstorj.Environment({
   bridgeUrl: 'https://api.storj.io',
   bridgeUser: 'user@domain.com',
   bridgePass: 'password',
-  encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+  encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+  logLevel: 0
 });
 
 const bucketId = 'd1dacd35cb1ced91192223c2';
@@ -36,6 +37,7 @@ storj.storeFile(bucketId, uploadFilePath, {
           return console.error(err);
         }
         console.log('File download complete');
+        storj.destroy();
       }
     });
   }

@@ -12,6 +12,11 @@ typedef struct {
     Nan::Callback *finished_callback;
 } transfer_callbacks_t;
 
+extern "C" void JsonLogger(const char *message, int level, void *handle) {
+    printf("{\"message\": \"%s\", \"level\": %i, \"timestamp\": %" PRIu64 "}\n",
+           message, level, storj_util_timestamp());
+}
+
 Local<Value> IntToStorjError(int error_code) {
     if (!error_code) {
         return Nan::Null();
@@ -61,6 +66,7 @@ Local<Value> IntToStatusError(int status_code) {
             error_message = Nan::New("Unknown status error").ToLocalChecked();
     }
     Local<Value> error = Nan::Error(error_message);
+    return error;
 }
 
 template <typename ReqType>
@@ -122,7 +128,12 @@ void GetInfoCallback(uv_work_t *work_req, int status) {
 
     if (error_and_status_check<json_request_t>(req, &error)) {
         const char *result_str = json_object_to_json_string(req->response);
-        result = v8::JSON::Parse(Nan::New(result_str).ToLocalChecked());
+        v8::Local<v8::String> result_json_string = Nan::New(result_str).ToLocalChecked();
+        Nan::JSON NanJSON;
+        Nan::MaybeLocal<v8::Value> res = NanJSON.Parse(result_json_string);
+        if (!res.IsEmpty()) {
+            result = res.ToLocalChecked();
+        }
     }
 
     Local<Value> argv[] = {
@@ -264,7 +275,6 @@ void CreateBucketCallback(uv_work_t *work_req, int status) {
     create_bucket_request_t *req = (create_bucket_request_t *) work_req->data;
 
     Nan::Callback *callback = (Nan::Callback*)req->handle;
-    Local<Array> buckets = Nan::New<Array>();
 
     Local<Value> bucket_value = Nan::Null();
     Local<Value> error = Nan::Null();
@@ -386,11 +396,7 @@ void StoreFileProgressCallback(double progress, uint64_t downloaded_bytes, uint6
 }
 
 template<class StateType>
-void StateStatusErrorGetter(Local <String> property, const v8::PropertyCallbackInfo <Value> &info) {
-    String::Utf8Value str(property);
-    const char *property_str = *str;
-    const char *property_dup = strdup(property_str);
-
+void StateStatusErrorGetter(Local<String> property, const Nan::PropertyCallbackInfo <Value> &info) {
     Local<Object> self = info.Holder();
     StateType *state = (StateType *) self->GetAlignedPointerFromInternalField(0);
     Local<Value> error = IntToStorjError(state->error_status);
@@ -467,13 +473,18 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
         StoreFileProgressCallback,
         StoreFileFinishedCallback);
 
+    if (status) {
+        // TODO give back an error
+    }
+
     Isolate* isolate = args.GetIsolate();
     Local<ObjectTemplate> state_template = ObjectTemplate::New(isolate);
     state_template->SetInternalFieldCount(1);
 
     Local<Object> state_local = state_template->NewInstance();
     state_local->SetAlignedPointerInInternalField(0, state);
-    state_local->SetAccessor(Nan::New("error_status").ToLocalChecked(), StateStatusErrorGetter<storj_upload_state_t>);
+    Nan::SetAccessor(state_local, Nan::New("error_status").ToLocalChecked(),
+                     StateStatusErrorGetter<storj_upload_state_t>);
 
     args.GetReturnValue().Set(state_local);
 }
@@ -564,8 +575,10 @@ void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
 
     if (file_path) {
         if(access(file_path, F_OK) != -1 ) {
+            // TODO give error in callback that file exists
             printf("Warning: File already exists at path [%s].\n", file_path);
 
+            // TODO have this be an option
             bool overwrite = false;
             if (overwrite) {
                 unlink(file_path);
@@ -582,7 +595,7 @@ void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
     }
 
     if (fd == NULL) {
-        // TODO send to stderr
+        // TODO give error in callback
         printf("Unable to open %s: %s\n", file_path, strerror(errno));
         return;
     }
@@ -599,13 +612,18 @@ void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
         ResolveFileProgressCallback,
         ResolveFileFinishedCallback);
 
+    if (status) {
+        // TODO give back an error
+    }
+
     Isolate* isolate = args.GetIsolate();
     Local<ObjectTemplate> state_template = ObjectTemplate::New(isolate);
     state_template->SetInternalFieldCount(1);
 
     Local<Object> state_local = state_template->NewInstance();
     state_local->SetAlignedPointerInInternalField(0, state);
-    state_local->SetAccessor(Nan::New("error_status").ToLocalChecked(), StateStatusErrorGetter<storj_download_state_t>);
+    Nan::SetAccessor(state_local, Nan::New("error_status").ToLocalChecked(),
+                     StateStatusErrorGetter<storj_download_state_t>);
 
     args.GetReturnValue().Set(state_local);
 
@@ -668,6 +686,13 @@ void DestroyEnvironment(const Nan::FunctionCallbackInfo<Value>& args) {
     }
 }
 
+void FreeEnvironmentCallback(const Nan::WeakCallbackInfo<storj_env_t> &data) {
+    storj_env_t *env = data.GetParameter();
+    if (env && storj_destroy_env(env)) {
+        Nan::ThrowError("Unable to destroy environment");
+    }
+}
+
 void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::EscapableHandleScope scope;
 
@@ -678,7 +703,7 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     v8::Local<v8::String> bridgePass = options->Get(Nan::New("bridgePass").ToLocalChecked()).As<v8::String>();
     v8::Local<v8::String> encryptionKey = options->Get(Nan::New("encryptionKey").ToLocalChecked()).As<v8::String>();
     Nan::MaybeLocal<Value> user_agent = options->Get(Nan::New("userAgent").ToLocalChecked());
-//    String::Utf8Value user_agent_str(user_agent.ToLocalChecked());
+    Nan::MaybeLocal<Value> logLevel = options->Get(Nan::New("logLevel").ToLocalChecked());
 
     v8::Local<v8::FunctionTemplate> constructor = Nan::New<v8::FunctionTemplate>();
     constructor->SetClassName(Nan::New("Environment").ToLocalChecked());
@@ -757,9 +782,12 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     http_options.timeout = STORJ_HTTP_TIMEOUT;
     http_options.cainfo_path = NULL;
 
-    storj_log_options_t log_options = {};
-    log_options.logger = NULL;
+    static storj_log_options_t log_options = {};
+    log_options.logger = JsonLogger;
     log_options.level = 0;
+    if (!logLevel.IsEmpty()) {
+        log_options.level = To<int>(logLevel.ToLocalChecked()).FromJust();
+    }
 
     // Initialize environment
 
@@ -775,7 +803,14 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     // Pass along the environment so it can be accessed by methods
     instance->SetAlignedPointerInInternalField(0, env);
 
-    args.GetReturnValue().Set(scope.Escape(instance));
+    Nan::Persistent<v8::Object> persistent(instance);
+
+    // There is no guarantee that the free callback will be called
+    persistent.SetWeak(env, FreeEnvironmentCallback, WeakCallbackType::kParameter);
+    persistent.MarkIndependent();
+    Nan::AdjustExternalMemory(sizeof(storj_env_t));
+
+    args.GetReturnValue().Set(persistent);
 }
 
 void init(Handle<Object> exports) {

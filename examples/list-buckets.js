@@ -4,7 +4,8 @@ const storj = new libstorj.Environment({
   bridgeUrl: 'https://api.storj.io',
   bridgeUser: 'user@domain.com',
   bridgePass: 'password',
-  encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+  encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+  logLevel: 0
 });
 
 storj.getInfo(function(err, result) {
@@ -12,12 +13,15 @@ storj.getInfo(function(err, result) {
     return console.error(err);
   }
   console.log('info:', result);
+
+  storj.getBuckets(function(err, result) {
+    if (err) {
+      return console.error(err);
+    }
+    console.log('buckets:', result);
+    storj.destroy();
+  });
 });
 
 
-storj.getBuckets(function(err, result) {
-  if (err) {
-    return console.error(err);
-  }
-  console.log('buckets:', result);
-});
+
