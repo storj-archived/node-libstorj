@@ -12,12 +12,15 @@ storj.getInfo(function(err, result) {
     return console.error(err);
   }
   console.log('info:', result);
+
+  storj.getBuckets(function(err, result) {
+    if (err) {
+      return console.error(err);
+    }
+    console.log('buckets:', result);
+    storj.destroy();
+  });
 });
 
 
-storj.getBuckets(function(err, result) {
-  if (err) {
-    return console.error(err);
-  }
-  console.log('buckets:', result);
-});
+

@@ -36,6 +36,7 @@ storj.storeFile(bucketId, uploadFilePath, {
           return console.error(err);
         }
         console.log('File download complete');
+        storj.destroy();
       }
     });
   }

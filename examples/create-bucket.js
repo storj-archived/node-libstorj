@@ -13,6 +13,7 @@ storj.createBucket(testBucketName, function(err, result) {
     return console.error(err);
   }
   console.log('info:', result);
+  storj.destroy();
 });
 
 

@@ -48,6 +48,8 @@ const storj = new libstorj.Environment({
   encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
 });
 ```
+*Note: The encryption key is held in locked memory that will not swap to disk unencrypted*
+
 
 Upload a file to a bucket:
 ```js
@@ -119,3 +121,11 @@ storj.getInfo(function(err, result) {
   console.log('info:', result);
 });
 ```
+
+Once finished, you should call:
+
+```js
+storj.destroy();
+```
+*Note: This will make sure to zero and free memory holding encryption keys and environement settings*
+
