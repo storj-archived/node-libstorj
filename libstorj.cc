@@ -692,7 +692,7 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     v8::Local<v8::String> bridgePass = options->Get(Nan::New("bridgePass").ToLocalChecked()).As<v8::String>();
     v8::Local<v8::String> encryptionKey = options->Get(Nan::New("encryptionKey").ToLocalChecked()).As<v8::String>();
     Nan::MaybeLocal<Value> user_agent = options->Get(Nan::New("userAgent").ToLocalChecked());
-//    String::Utf8Value user_agent_str(user_agent.ToLocalChecked());
+    Nan::MaybeLocal<Value> logLevel = options->Get(Nan::New("logLevel").ToLocalChecked());
 
     v8::Local<v8::FunctionTemplate> constructor = Nan::New<v8::FunctionTemplate>();
     constructor->SetClassName(Nan::New("Environment").ToLocalChecked());
@@ -773,9 +773,10 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
 
     static storj_log_options_t log_options = {};
     log_options.logger = JsonLogger;
-
-    // TODO configurable log level
     log_options.level = 0;
+    if (!logLevel.IsEmpty()) {
+        log_options.level = To<int>(logLevel.ToLocalChecked()).FromJust();
+    }
 
     // Initialize environment
 

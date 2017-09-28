@@ -15,7 +15,8 @@ const defaultConfig = {
   bridgeUrl: 'http://localhost:3000',
   bridgeUser: 'testuser@storj.io',
   bridgePass: 'dce18e67025a8fd68cab186e196a9f8bcca6c9e4a7ad0be8a6f5e48f3abd1b04',
-  encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+  encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+  logLevel: 4
 };
 
 const badHostnameConfig = {

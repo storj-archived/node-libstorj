@@ -45,7 +45,8 @@ const storj = new libstorj.Environment({
   bridgeUrl: 'https://api.storj.io',
   bridgeUser: 'user@domain.com',
   bridgePass: 'password',
-  encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+  encryptionKey: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+  logLevel: 4
 });
 ```
 *Note: The encryption key is held in locked memory that will not swap to disk unencrypted*
