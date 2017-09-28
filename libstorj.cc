@@ -128,7 +128,12 @@ void GetInfoCallback(uv_work_t *work_req, int status) {
 
     if (error_and_status_check<json_request_t>(req, &error)) {
         const char *result_str = json_object_to_json_string(req->response);
-        result = v8::JSON::Parse(Nan::New(result_str).ToLocalChecked());
+        v8::Local<v8::String> result_json_string = Nan::New(result_str).ToLocalChecked();
+        Nan::JSON NanJSON;
+        Nan::MaybeLocal<v8::Value> res = NanJSON.Parse(result_json_string);
+        if (!res.IsEmpty()) {
+            result = res.ToLocalChecked();
+        }
     }
 
     Local<Value> argv[] = {
