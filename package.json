@@ -79,13 +79,13 @@
       {
         "arch": "ia32",
         "platform": "win32",
-        "filename": "libstorj-1.1.0-beta-win32.tar.gz",
+        "filename": "libstorj-1.1.0-beta-win32.zip",
         "checksum": "c627f21c9913da6795d4c454e5236f8204567810b9680c5372f76d82a173e3da"
       },
       {
         "arch": "x64",
         "platform": "win32",
-        "filename": "libstorj-1.1.0-beta-win64.tar.gz",
+        "filename": "libstorj-1.1.0-beta-win64.zip",
         "checksum": "1cb5bbc82d077aa975d4debb490ba38a7cc667f32d93042b67dc9c8b6dfb646a"
       }
     ]
