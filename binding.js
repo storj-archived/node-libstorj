@@ -4,10 +4,11 @@ const { execSync } = require('child_process');
 const stdout = process.stdout;
 const path = require('path');
 const basedir = path.resolve(__dirname);
-const location = './libstorj-1.1.0-beta';
+const libstorj = require('./package.json').libstorj;
+const basePath = libstorj.basePath;
 
-const libstorjArchive = path.resolve(basedir, location + '/lib/libstorj.a');
-const libstorjIncludes = path.resolve(basedir, location + '/include');
+const libstorjArchive = path.resolve(basedir, basePath + '/lib/libstorj.a');
+const libstorjIncludes = path.resolve(basedir, basePath + '/include');
 
 let archives = [
   '/depends/lib/libnettle.a',
@@ -18,7 +19,7 @@ let archives = [
   '/depends/lib/libcurl.a'
 ];
 
-archives = archives.map((a) => path.resolve(basedir, location + a));
+archives = archives.map((a) => path.resolve(basedir, basePath + a));
 
 let installed = true;
 try {
