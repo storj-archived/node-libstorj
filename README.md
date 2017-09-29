@@ -11,7 +11,7 @@ Install via npm:
 npm install github:storj/node-libstorj --save
 ```
 
-Please see `./examples` directory for example code usage.
+Please see [`./examples`](/examples) directory for example code usage.
 
 First setup the storj environment with authentication and encryption options:
 
@@ -73,7 +73,7 @@ Once finished, you should call to zero and free memory holding encryption keys:
 storj.destroy();
 ```
 
-Please see `./examples` directory for further usage.
+Please see [`./examples`](/examples) directory for further usage.
 
 ## API
 
