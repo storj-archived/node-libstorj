@@ -6,11 +6,9 @@ Node.js library for encrypted file transfer on the Storj network via bindings to
 
 ## Example Usage
 
-Install via git:
+Install via npm:
 ```
-git clone git@github.com:Storj/node-libstorj.git
-cd node-libstorj
-npm install
+npm install github:storj/node-libstorj --save
 ```
 
 Please see `./examples` directory for example code usage.
