@@ -4,20 +4,23 @@ const { execSync } = require('child_process');
 const stdout = process.stdout;
 const path = require('path');
 const basedir = path.resolve(__dirname);
+const libstorj = require('./package.json').libstorj;
+const basePath = libstorj.basePath;
 
-const libstorjArchive = path.resolve(basedir, './libstorj/lib/libstorj.a');
-const libstorjIncludes = path.resolve(basedir, './libstorj/include');
+const libstorjArchive = path.resolve(basedir, basePath + '/lib/libstorj.a');
+const libstorjIncludes = path.resolve(basedir, basePath + '/include');
+const depsIncludes = path.resolve(basedir, basePath + '/depends/include');
 
 let archives = [
-  './libstorj/depends/lib/libnettle.a',
-  './libstorj/depends/lib/libgnutls.a',
-  './libstorj/depends/lib/libhogweed.a',
-  './libstorj/depends/lib/libjson-c.a',
-  './libstorj/depends/lib/libgmp.a',
-  './libstorj/depends/lib/libcurl.a'
+  '/depends/lib/libnettle.a',
+  '/depends/lib/libgnutls.a',
+  '/depends/lib/libhogweed.a',
+  '/depends/lib/libjson-c.a',
+  '/depends/lib/libgmp.a',
+  '/depends/lib/libcurl.a'
 ];
 
-archives = archives.map((a) => path.resolve(basedir, a));
+archives = archives.map((a) => path.resolve(basedir, basePath + a));
 
 let installed = true;
 try {
@@ -37,6 +40,10 @@ switch(cmd) {
   case 'include_dirs':
     status = 0;
     stdout.write(installed ? 'storj.h' : libstorjIncludes);
+    break;
+  case 'include_dirs_deps':
+    status = 0;
+    stdout.write(installed ? '' : depsIncludes);
     break;
   case 'ldflags':
     status = 0;

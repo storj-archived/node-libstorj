@@ -3,7 +3,8 @@
     'target_name': 'libstorj',
     'include_dirs' : [
       '<!(node -e "require(\'nan\')")',
-      '<!(node ./binding.js include_dirs)'
+      '<!(node ./binding.js include_dirs)',
+      '<!(node ./binding.js include_dirs_deps)'
     ],
     'libraries': [
       '<!(node ./binding.js libraries)'
