@@ -1,7 +1,7 @@
 {
-  "name": "node-libstorj",
-  "version": "1.0.0-beta",
-  "description": "Node.js bindings to libstorj C library",
+  "name": "storj",
+  "version": "5.0.0-beta",
+  "description": "Node.js library for encrypted file transfer on the Storj network.",
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha test/**.test.js --recursive",
