@@ -4,6 +4,7 @@ const { execSync } = require('child_process');
 const stdout = process.stdout;
 const stderr = process.stderr;
 const path = require('path');
+const fs = require('fs');
 const basedir = path.resolve(__dirname);
 const libstorj = require('./package.json').libstorj;
 const releases = libstorj.releases;
@@ -46,8 +47,12 @@ const download = `curl --location --fail --connect-timeout 120 --retry 3 -o "${t
 const extract = `tar --verbose -xf ${target}`;
 const hasher = `${sha256sum} ${target} | awk '{print $1}'`
 
-stdout.write(`Downloading libstorj \n  from: ${url} \n  to: ${target}\n`);
-execSync(download);
+if (fs.existsSync(target)) {
+  stdout.write(`Already downloaded libstorj \n  at: ${target}\n`);
+} else {
+  stdout.write(`Downloading libstorj \n  from: ${url} \n  to: ${target}\n`);
+  execSync(download);
+}
 
 const hashbuf = execSync(hasher);
 const hash = hashbuf.toString().trim();
