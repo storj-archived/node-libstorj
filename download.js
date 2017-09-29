@@ -26,6 +26,7 @@ const baseUrl = libstorj.baseUrl;
 
 let checksum = null;
 let filename = null;
+let sha256sum = (platform === 'darwin') ? 'shasum -a 256' : 'sha256sum';
 
 for (var i = 0; i < releases.length; i++) {
   if (releases[i].arch === arch && releases[i].platform === platform) {
@@ -43,9 +44,19 @@ const url = baseUrl + '/' + filename;
 const target = path.resolve(basedir, './' + filename);
 const download = `curl --location --fail --connect-timeout 120 --retry 3 -o "${target}" "${url}"`
 const extract = `tar --verbose -xf ${target}`;
+const hasher = `${sha256sum} ${target} | awk '{print $1}'`
 
-stdout.write(`Downloading libstorj from: ${url} to: ${target}\n`);
+stdout.write(`Downloading libstorj \n  from: ${url} \n  to: ${target}\n`);
 execSync(download);
+
+const hashbuf = execSync(hasher);
+const hash = hashbuf.toString().trim();
+if (hash === checksum) {
+  stdout.write(`Verified libstorj: \n  file: ${target}\n  hash: ${checksum}\n`);
+} else {
+  stderr.write(`Unable to verify libstorj release: ${target} \n  expect: ${checksum}\n  actual: ${hash}\n`);
+  process.exit(1);
+}
 
 stdout.write(`Extracting target: ${target}\n`);
 execSync(extract);
