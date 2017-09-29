@@ -9,6 +9,7 @@ const basePath = libstorj.basePath;
 
 const libstorjArchive = path.resolve(basedir, basePath + '/lib/libstorj.a');
 const libstorjIncludes = path.resolve(basedir, basePath + '/include');
+const depsIncludes = path.resolve(basedir, basePath + '/depends/include');
 
 let archives = [
   '/depends/lib/libnettle.a',
@@ -39,6 +40,10 @@ switch(cmd) {
   case 'include_dirs':
     status = 0;
     stdout.write(installed ? 'storj.h' : libstorjIncludes);
+    break;
+  case 'include_dirs_deps':
+    status = 0;
+    stdout.write(installed ? '' : depsIncludes);
     break;
   case 'ldflags':
     status = 0;
