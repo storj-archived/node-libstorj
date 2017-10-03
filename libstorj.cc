@@ -800,6 +800,9 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
         Nan::ThrowError("Environment is not initialized");
     }
 
+    // Make sure that the loop is the default loop
+    env->loop = uv_default_loop();
+
     // Pass along the environment so it can be accessed by methods
     instance->SetAlignedPointerInInternalField(0, env);
 
