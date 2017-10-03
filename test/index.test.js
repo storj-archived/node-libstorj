@@ -251,6 +251,14 @@ describe('libstorj', function() {
     console.log('mock farmer closed');
   });
 
+  describe('@Environment', function() {
+    it('will throw error without options', function() {
+      expect(function() {
+        const env = new libstorj.Environment(); // option missing
+      }).to.throw('First argument is expected');
+    });
+  });
+
   describe('#utilTimestamp', function() {
     it('will give back timestamp', function() {
       var timestamp = libstorj.utilTimestamp();

@@ -695,6 +695,9 @@ void FreeEnvironmentCallback(const Nan::WeakCallbackInfo<storj_env_t> &data) {
 
 void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::EscapableHandleScope scope;
+    if (args.Length() == 0) {
+        return Nan::ThrowError("First argument is expected");
+    }
 
     v8::Local<v8::Object> options = args[0].As<v8::Object>();
 
