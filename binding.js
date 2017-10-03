@@ -24,7 +24,7 @@ archives = archives.map((a) => path.resolve(basedir, basePath + a));
 
 let installed = true;
 try {
-  execSync('pkg-config --exists libstorj');
+  let output = execSync('pkg-config --exists libstorj', { stdio: ['ignore', 'ignore', 'ignore'] });
 } catch(e) {
   installed = false;
 }
@@ -49,6 +49,11 @@ switch(cmd) {
     status = 0;
     const ldflags = archives.map((a) => '-Wl,--whole-archive ' + a).join(' ');
     stdout.write(installed ? '' : ldflags + ' -Wl,--no-whole-archive');
+    break;
+  case 'ldflags_mac':
+    status = 0;
+    const ldflags_mac = archives.map((a) => '-Wl,-all_load ' + a).join(' ');
+    stdout.write(installed ? '' : '-framework Security ' + ldflags_mac + ' -Wl,-noall_load');
     break;
   default:
     status = 1;
