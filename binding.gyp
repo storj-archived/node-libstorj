@@ -15,7 +15,12 @@
     'conditions': [
         ['OS=="mac"', {
           'xcode_settings': {
-            'MACOSX_DEPLOYMENT_TARGET': '10.9'
+            'MACOSX_DEPLOYMENT_TARGET': '10.9',
+            'OTHER_LDFLAGS': [
+              '<!(node ./binding.js ldflags_mac)'
+            ],
+            'CLANG_CXX_LIBRARY': 'libc++',
+            'CLANG_CXX_LANGUAGE_STANDARD':'c++11'
           }
         }
       ]
