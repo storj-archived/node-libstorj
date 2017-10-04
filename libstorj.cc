@@ -424,6 +424,9 @@ void StateStatusErrorGetter(Local<String> property, const Nan::PropertyCallbackI
 }
 
 void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.Length() != 3) {
+        return Nan::ThrowError("Unexpected arguments");
+    }
     if (args.This()->InternalFieldCount() != 1) {
         return Nan::ThrowError("Environment not available for instance");
     }
@@ -510,6 +513,9 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
 }
 
 void StoreFileCancel(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.Length() != 1) {
+        return Nan::ThrowError("Unexpected arguments");
+    }
     Local<Object> state_local = Nan::To<Object>(args[0]).ToLocalChecked();
     storj_upload_state_t *state = (storj_upload_state_t *)state_local->GetAlignedPointerFromInternalField(0);
 
@@ -517,6 +523,9 @@ void StoreFileCancel(const Nan::FunctionCallbackInfo<Value>& args) {
 }
 
 void ResolveFileCancel(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.Length() != 1) {
+        return Nan::ThrowError("Unexpected arguments");
+    }
     Local<Object> state_local = Nan::To<Object>(args[0]).ToLocalChecked();
     storj_download_state_t *state = (storj_download_state_t *)state_local->GetAlignedPointerFromInternalField(0);
 
@@ -563,6 +572,9 @@ void ResolveFileProgressCallback(double progress,
 }
 
 void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.Length() != 4) {
+        return Nan::ThrowError("Unexpected arguments");
+    }
     if (args.This()->InternalFieldCount() != 1) {
         return Nan::ThrowError("Environment not available for instance");
     }
@@ -669,6 +681,9 @@ void DeleteFileCallback(uv_work_t *work_req, int status) {
 }
 
 void DeleteFile(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.Length() != 3 || !args[2]->IsFunction()) {
+        return Nan::ThrowError("Unexpected arguments");
+    }
     if (args.This()->InternalFieldCount() != 1) {
         return Nan::ThrowError("Environment not available for instance");
     }

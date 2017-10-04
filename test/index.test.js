@@ -387,6 +387,22 @@ describe('libstorj', function() {
   describe('#createBucket', function() {
     const newBucketName = 'test-bucket';
 
+    it('will throw without arguments', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.createBucket();
+      }).to.throw('Unexpected arguments');
+      env.destroy();
+    });
+
+    it('will throw if callback not a function', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.createBucket('somebucketname', 'notafunction');
+      }).to.throw('Unexpected arguments');
+      env.destroy();
+    });
+
     it('should create a new bucket', function(done) {
       const env = new libstorj.Environment(defaultConfig);
 
@@ -411,6 +427,22 @@ describe('libstorj', function() {
   describe('#deleteBucket', function () {
     const targetBucketId = '368be0816766b28fd5f43af5';
 
+    it('will throw without arguments', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.deleteBucket();
+      }).to.throw('Unexpected arguments');
+      env.destroy();
+    });
+
+    it('will throw if callback not a function', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.deleteBucket('bucketid', 'notafunction');
+      }).to.throw('Unexpected arguments');
+      env.destroy();
+    });
+
     it('should delete the specified bucket', function (done) {
       const env = new libstorj.Environment(defaultConfig);
 
@@ -430,6 +462,22 @@ describe('libstorj', function() {
   });
 
   describe('#listFiles', function () {
+    it('will throw without arguments', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.listFiles();
+      }).to.throw('Unexpected arguments');
+      env.destroy();
+    });
+
+    it('will throw if callback not a function', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.listFiles('bucketid', 'notafunction');
+      }).to.throw('Unexpected arguments');
+      env.destroy();
+    });
+
     it('should get a list of files for the specified bucket', function (done) {
       const env = new libstorj.Environment(defaultConfig);
 
@@ -465,6 +513,14 @@ describe('libstorj', function() {
       finishedCallback: function () {}
     };
 
+    it('will throw with unexpected argument number', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.storeFile();
+      }).to.throw('Unexpected arguments');
+      env.destroy();
+    });
+
     it('should upload a file', function(done) {
       this.timeout(0);
       const env = new libstorj.Environment(defaultConfig);
@@ -487,6 +543,14 @@ describe('libstorj', function() {
   });
 
   describe('#storeFileCancel', function () {
+    it('will throw with unexpected argument number', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.storeFileCancel();
+      }).to.throw('Unexpected arguments');
+      env.destroy();
+    });
+
     it('should cancel the specified state\'s upload', function (done) {
       this.timeout(0);
       const env = new libstorj.Environment(defaultConfig);
@@ -536,6 +600,14 @@ describe('libstorj', function() {
       finishedCallback: function () {}
     };
 
+    it('will throw with unexpected arguments', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.resolveFile();
+      }).to.throw('Unexpected arguments');
+      env.destroy();
+    });
+
     it.skip('should download a file', function(done) {
       this.timeout(0);
       const env = new libstorj.Environment(defaultConfig);
@@ -564,6 +636,14 @@ describe('libstorj', function() {
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
+    });
+
+    it('will throw with unexpected arguments', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.resolveFileCancel();
+      }).to.throw('Unexpected arguments');
+      env.destroy();
     });
 
     it('should cancel the specified state\'s upload', function (done) {
@@ -600,6 +680,22 @@ describe('libstorj', function() {
   describe('#deleteFile', function () {
     const targetBucketId = '368be0816766b28fd5f43af5';
     const targetFileId = '998960317b6725a3f8080c2b';
+
+    it('will throw with unexpected arguments', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.deleteFile();
+      }).to.throw('Unexpected arguments');
+      env.destroy();
+    });
+
+    it('will throw if callback not a function', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.deleteFile('bucketid', 'fileid', 'not a function');
+      }).to.throw('Unexpected arguments');
+      env.destroy();
+    });
 
     it('should delete the specified file from the specified bucket', function (done) {
       const env = new libstorj.Environment(defaultConfig);
