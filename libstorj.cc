@@ -487,7 +487,9 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
     upload_opts.fd = fd;
 
     storj_upload_state_t *state = static_cast<storj_upload_state_t*>(malloc(sizeof(storj_upload_state_t)));
-    // TODO handle error
+    if (!state) {
+        return Nan::ThrowError("Unable to create upload state");
+    }
 
     int status = storj_bridge_store_file(env,
         state,
@@ -497,7 +499,7 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
         StoreFileFinishedCallback);
 
     if (status) {
-        // TODO give back an error
+        return Nan::ThrowError("Unable to queue file upload");
     }
 
     Isolate* isolate = args.GetIsolate();
@@ -603,37 +605,45 @@ void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
     download_callbacks->progress_callback = new Nan::Callback(options->Get(Nan::New("progressCallback").ToLocalChecked()).As<Function>());
     download_callbacks->finished_callback = new Nan::Callback(options->Get(Nan::New("finishedCallback").ToLocalChecked()).As<Function>());
 
-    FILE *fd = NULL;
+    Nan::MaybeLocal<Value> overwriteOption = options->Get(Nan::New("overwrite").ToLocalChecked());
 
-    if (file_path) {
-        if(access(file_path, F_OK) != -1 ) {
-            // TODO give error in callback that file exists
-            printf("Warning: File already exists at path [%s].\n", file_path);
-
-            // TODO have this be an option
-            bool overwrite = false;
-            if (overwrite) {
-                unlink(file_path);
-            } else {
-                printf("\nCanceled overwriting of [%s].\n", file_path);
-                return;
-            }
-
-        }
-
-        fd = fopen(file_path, "w+");
-    } else {
-        fd = stdout;
+    bool overwrite = false;
+    if (!overwriteOption.IsEmpty()) {
+        overwrite = To<bool>(overwriteOption.ToLocalChecked()).FromJust();
     }
 
+    FILE *fd = NULL;
+
+    if (access(file_path, F_OK) != -1 ) {
+        if (overwrite) {
+            unlink(file_path);
+        } else {
+            v8::Local<v8::String> msg = Nan::New("File already exists").ToLocalChecked();
+            v8::Local<v8::Value> error = Nan::Error(msg);
+            Local<Value> argv[] = {
+                error
+            };
+            download_callbacks->finished_callback->Call(1, argv);
+            return;
+        }
+    }
+
+    fd = fopen(file_path, "w+");
+
     if (fd == NULL) {
-        // TODO give error in callback
-        printf("Unable to open %s: %s\n", file_path, strerror(errno));
+        v8::Local<v8::String> msg = Nan::New(strerror(errno)).ToLocalChecked();
+        v8::Local<v8::Value> error = Nan::Error(msg);
+        Local<Value> argv[] = {
+            error
+        };
+        download_callbacks->finished_callback->Call(1, argv);
         return;
     }
 
-    storj_download_state_t *state = static_cast<storj_download_state_t*>( malloc(sizeof(storj_download_state_t)));
-    // TODO handle error
+    storj_download_state_t *state = static_cast<storj_download_state_t*>(malloc(sizeof(storj_download_state_t)));
+    if (!state) {
+        return Nan::ThrowError("Unable to create download state");
+    }
 
     int status = storj_bridge_resolve_file(env,
         state,
@@ -645,7 +655,7 @@ void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
         ResolveFileFinishedCallback);
 
     if (status) {
-        // TODO give back an error
+        return Nan::ThrowError("Unable to queue file download");
     }
 
     Isolate* isolate = args.GetIsolate();
