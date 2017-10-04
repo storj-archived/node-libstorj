@@ -7,6 +7,11 @@
 using namespace v8;
 using namespace Nan;
 
+class free_env_proxy {
+public:
+    Nan::Persistent<v8::Object> persistent;
+};
+
 typedef struct {
     Nan::Callback *progress_callback;
     Nan::Callback *finished_callback;
@@ -147,6 +152,9 @@ void GetInfoCallback(uv_work_t *work_req, int status) {
 }
 
 void GetInfo(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.Length() != 1 || !args[0]->IsFunction()) {
+        return Nan::ThrowError("First argument is expected to be a function");
+    }
     if (args.This()->InternalFieldCount() != 1) {
         return Nan::ThrowError("Environment not available for instance");
     }
@@ -206,6 +214,9 @@ void GetBucketsCallback(uv_work_t *work_req, int status) {
 }
 
 void GetBuckets(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.Length() != 1 || !args[0]->IsFunction()) {
+        return Nan::ThrowError("First argument is expected to be a function");
+    }
     if (args.This()->InternalFieldCount() != 1) {
         return Nan::ThrowError("Environment not available for instance");
     }
@@ -251,6 +262,9 @@ void ListFilesCallback(uv_work_t *work_req, int status) {
 }
 
 void ListFiles(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.Length() != 2 || !args[1]->IsFunction()) {
+        return Nan::ThrowError("Unexpected arguments");
+    }
     if (args.This()->InternalFieldCount() != 1) {
         return Nan::ThrowError("Environment not available for instance");
     }
@@ -297,6 +311,9 @@ void CreateBucketCallback(uv_work_t *work_req, int status) {
 }
 
 void CreateBucket(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.Length() != 2 || !args[1]->IsFunction()) {
+        return Nan::ThrowError("Unexpected arguments");
+    }
     if (args.This()->InternalFieldCount() != 1) {
         return Nan::ThrowError("Environment not available for instance");
     }
@@ -334,6 +351,9 @@ void DeleteBucketCallback(uv_work_t *work_req, int status) {
 }
 
 void DeleteBucket(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.Length() != 2 || !args[1]->IsFunction()) {
+        return Nan::ThrowError("Unexpected arguments");
+    }
     if (args.This()->InternalFieldCount() != 1) {
         return Nan::ThrowError("Environment not available for instance");
     }
@@ -684,13 +704,18 @@ void DestroyEnvironment(const Nan::FunctionCallbackInfo<Value>& args) {
     if (storj_destroy_env(env)) {
         Nan::ThrowError("Unable to destroy environment");
     }
+    args.This()->SetAlignedPointerInInternalField(0, NULL);
 }
 
-void FreeEnvironmentCallback(const Nan::WeakCallbackInfo<storj_env_t> &data) {
-    storj_env_t *env = data.GetParameter();
+void FreeEnvironmentCallback(const Nan::WeakCallbackInfo<free_env_proxy> &data) {
+    free_env_proxy *proxy = data.GetParameter();
+    Local<Object> obj = Nan::New<Object>(proxy->persistent);
+    storj_env_t *env = (storj_env_t *)obj->GetAlignedPointerFromInternalField(0);
+
     if (env && storj_destroy_env(env)) {
         Nan::ThrowError("Unable to destroy environment");
     }
+    delete proxy;
 }
 
 void Environment(const v8::FunctionCallbackInfo<Value>& args) {
@@ -806,13 +831,18 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     // Make sure that the loop is the default loop
     env->loop = uv_default_loop();
 
+    free_env_proxy *proxy = new free_env_proxy();
+
     // Pass along the environment so it can be accessed by methods
     instance->SetAlignedPointerInInternalField(0, env);
 
     Nan::Persistent<v8::Object> persistent(instance);
 
+    // Setup reference
+    proxy->persistent.Reset(persistent);
+
     // There is no guarantee that the free callback will be called
-    persistent.SetWeak(env, FreeEnvironmentCallback, WeakCallbackType::kParameter);
+    persistent.SetWeak(proxy, FreeEnvironmentCallback, WeakCallbackType::kParameter);
     persistent.MarkIndependent();
     Nan::AdjustExternalMemory(sizeof(storj_env_t));
 

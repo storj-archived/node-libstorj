@@ -309,6 +309,22 @@ describe('libstorj', function() {
   });
 
   describe('#getInfo', function() {
+    it('will throw without arguments', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.getInfo();
+      }).to.throw('First argument is expected');
+      env.destroy();
+    });
+
+    it('will throw without arguments', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.getInfo('not a function');
+      }).to.throw('First argument is expected');
+      env.destroy();
+    });
+
     it('should get info about the bridge', function(done) {
       const env = new libstorj.Environment(defaultConfig);
 
