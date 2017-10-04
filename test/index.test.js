@@ -317,7 +317,7 @@ describe('libstorj', function() {
       env.destroy();
     });
 
-    it('will throw without arguments', function() {
+    it('will throw if callback not a function', function() {
       const env = new libstorj.Environment(defaultConfig);
       expect(function() {
         env.getInfo('not a function');
@@ -342,6 +342,23 @@ describe('libstorj', function() {
   });
 
   describe('#getBuckets', function() {
+
+    it('will throw without arguments', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.getBuckets();
+      }).to.throw('First argument is expected');
+      env.destroy();
+    });
+
+    it('will throw if callback not a function', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.getBuckets('not a function');
+      }).to.throw('First argument is expected');
+      env.destroy();
+    });
+
     it('should get a list of buckets', function(done) {
       const env = new libstorj.Environment(defaultConfig);
 
