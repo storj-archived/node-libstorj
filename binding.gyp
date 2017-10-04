@@ -10,7 +10,7 @@
       '<!(node ./binding.js libraries)'
     ],
     'sources': [
-      'libstorj.cc',
+      'binding.cc',
     ],
     'conditions': [
         ['OS=="mac"', {
