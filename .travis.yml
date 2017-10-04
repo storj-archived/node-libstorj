@@ -15,11 +15,6 @@ compiler:
   - gcc
 before_install:
   - ./.travis.sh
-  - git clone https://github.com/Storj/libstorj.git
-  - cd libstorj
-  - ./autogen.sh
-  - ./configure --prefix=/usr
-  - sudo make install  
 script:
   - npm install
   - npm run test
