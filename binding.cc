@@ -15,7 +15,8 @@ public:
 typedef struct {
     Nan::Callback *progress_callback;
     Nan::Callback *finished_callback;
-} transfer_callbacks_t;
+    storj_upload_state_t *state;
+} transfer_locals_t;
 
 extern "C" void JsonLogger(const char *message, int level, void *handle) {
     printf("{\"message\": \"%s\", \"level\": %i, \"timestamp\": %" PRIu64 "}\n",
@@ -375,8 +376,9 @@ void DeleteBucket(const Nan::FunctionCallbackInfo<Value>& args) {
 void StoreFileFinishedCallback(int status, char *file_id, void *handle) {
     Nan::HandleScope scope;
 
-    transfer_callbacks_t *upload_callbacks = (transfer_callbacks_t *) handle;
-    Nan::Callback *callback = upload_callbacks->finished_callback;
+    transfer_locals_t *upload_locals = (transfer_locals_t *) handle;
+    Nan::Callback *callback = upload_locals->finished_callback;
+    storj_upload_state_t *upload_state = upload_locals->state;
 
     Local<Value> file_id_local = Nan::Null();
     if (status == 0) {
@@ -393,14 +395,15 @@ void StoreFileFinishedCallback(int status, char *file_id, void *handle) {
     callback->Call(2, argv);
     if (file_id) {
         free(file_id);
+        free(upload_state);
     }
 }
 
 void StoreFileProgressCallback(double progress, uint64_t downloaded_bytes, uint64_t total_bytes, void *handle) {
     Nan::HandleScope scope;
 
-    transfer_callbacks_t *upload_callbacks = (transfer_callbacks_t *) handle;
-    Nan::Callback *callback = upload_callbacks->progress_callback;
+    transfer_locals_t *upload_locals = (transfer_locals_t *) handle;
+    Nan::Callback *callback = upload_locals->progress_callback;
 
     Local<Number> progress_local = Nan::New(progress);
     Local<Number> downloaded_bytes_local = Nan::New((double)downloaded_bytes);
@@ -445,10 +448,10 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
 
     v8::Local<v8::Object> options = args[2].As<v8::Object>();
 
-    transfer_callbacks_t *upload_callbacks = static_cast<transfer_callbacks_t*>(malloc(sizeof(transfer_callbacks_t)));
+    transfer_locals_t *upload_locals = static_cast<transfer_locals_t*>(malloc(sizeof(transfer_locals_t)));
 
-    upload_callbacks->progress_callback = new Nan::Callback(options->Get(Nan::New("progressCallback").ToLocalChecked()).As<Function>());
-    upload_callbacks->finished_callback = new Nan::Callback(options->Get(Nan::New("finishedCallback").ToLocalChecked()).As<Function>());
+    upload_locals->progress_callback = new Nan::Callback(options->Get(Nan::New("progressCallback").ToLocalChecked()).As<Function>());
+    upload_locals->finished_callback = new Nan::Callback(options->Get(Nan::New("finishedCallback").ToLocalChecked()).As<Function>());
 
     String::Utf8Value file_name_str(options->Get(Nan::New("filename").ToLocalChecked()).As<v8::String>());
     const char *file_name = *file_name_str;
@@ -468,7 +471,7 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
             Nan::Null()
         };
 
-        upload_callbacks->finished_callback->Call(2, argv);
+        upload_locals->finished_callback->Call(2, argv);
         return;
     }
 
@@ -490,11 +493,12 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
     if (!state) {
         return Nan::ThrowError("Unable to create upload state");
     }
+    upload_locals->state = state;
 
     int status = storj_bridge_store_file(env,
         state,
         &upload_opts,
-        (void *) upload_callbacks,
+        (void *) upload_locals,
         StoreFileProgressCallback,
         StoreFileFinishedCallback);
 
@@ -539,7 +543,7 @@ void ResolveFileFinishedCallback(int status, FILE *fd, void *handle) {
 
     fclose(fd);
 
-    transfer_callbacks_t *download_callbacks = (transfer_callbacks_t *) handle;
+    transfer_locals_t *download_callbacks = (transfer_locals_t *) handle;
     Nan::Callback *callback = download_callbacks->finished_callback;
 
     Local<Value> error = IntToStorjError(status);
@@ -557,7 +561,7 @@ void ResolveFileProgressCallback(double progress,
         void *handle) {
     Nan::HandleScope scope;
 
-    transfer_callbacks_t *download_callbacks = (transfer_callbacks_t *) handle;
+    transfer_locals_t *download_callbacks = (transfer_locals_t *) handle;
     Nan::Callback *callback = download_callbacks->progress_callback;
 
     Local<Number> progress_local = Nan::New(progress);
@@ -600,7 +604,7 @@ void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
 
     v8::Local<v8::Object> options = args[3].As<v8::Object>();
 
-    transfer_callbacks_t *download_callbacks = static_cast<transfer_callbacks_t*>(malloc(sizeof(transfer_callbacks_t)));
+    transfer_locals_t *download_callbacks = static_cast<transfer_locals_t*>(malloc(sizeof(transfer_locals_t)));
 
     download_callbacks->progress_callback = new Nan::Callback(options->Get(Nan::New("progressCallback").ToLocalChecked()).As<Function>());
     download_callbacks->finished_callback = new Nan::Callback(options->Get(Nan::New("finishedCallback").ToLocalChecked()).As<Function>());
