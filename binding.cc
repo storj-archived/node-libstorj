@@ -486,19 +486,17 @@ void StoreFile(const Nan::FunctionCallbackInfo<Value>& args) {
     upload_opts.file_name = file_name_dup;
     upload_opts.fd = fd;
 
-    storj_upload_state_t *state = static_cast<storj_upload_state_t*>(malloc(sizeof(storj_upload_state_t)));
+    storj_upload_state_t *state = storj_bridge_store_file(env,
+                                                          &upload_opts,
+                                                          (void *) upload_callbacks,
+                                                          StoreFileProgressCallback,
+                                                          StoreFileFinishedCallback);
+
     if (!state) {
         return Nan::ThrowError("Unable to create upload state");
     }
 
-    int status = storj_bridge_store_file(env,
-        state,
-        &upload_opts,
-        (void *) upload_callbacks,
-        StoreFileProgressCallback,
-        StoreFileFinishedCallback);
-
-    if (status) {
+    if (state->error_status) {
         return Nan::ThrowError("Unable to queue file upload");
     }
 
@@ -640,21 +638,18 @@ void ResolveFile(const Nan::FunctionCallbackInfo<Value>& args) {
         return;
     }
 
-    storj_download_state_t *state = static_cast<storj_download_state_t*>(malloc(sizeof(storj_download_state_t)));
+    storj_download_state_t *state = storj_bridge_resolve_file(env,
+                                                              bucket_id_dup,
+                                                              file_id_dup,
+                                                              fd,
+                                                              (void *) download_callbacks,
+                                                              ResolveFileProgressCallback,
+                                                              ResolveFileFinishedCallback);
     if (!state) {
         return Nan::ThrowError("Unable to create download state");
     }
 
-    int status = storj_bridge_resolve_file(env,
-        state,
-        bucket_id_dup,
-        file_id_dup,
-        fd,
-        (void *) download_callbacks,
-        ResolveFileProgressCallback,
-        ResolveFileFinishedCallback);
-
-    if (status) {
+    if (state->error_status) {
         return Nan::ThrowError("Unable to queue file download");
     }
 
