@@ -74,7 +74,7 @@
         "arch": "x64",
         "platform": "darwin",
         "filename": "libstorj-2.0.0-beta-macos.tar.gz",
-        "checksum": "1af76726b183437b75e6b77393d5da1cb729a0272b5180f7eb983ec1d9850750n"
+        "checksum": "1af76726b183437b75e6b77393d5da1cb729a0272b5180f7eb983ec1d9850750"
       },
       {
         "arch": "ia32",
