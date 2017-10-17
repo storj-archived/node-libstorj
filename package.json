@@ -49,44 +49,44 @@
     "mocha": "^3.4.2"
   },
   "libstorj": {
-    "basePath": "./libstorj-1.1.0-beta",
-    "baseUrl": "https://github.com/Storj/libstorj/releases/download/v1.1.0-beta",
+    "basePath": "./libstorj-2.0.0-beta",
+    "baseUrl": "https://github.com/Storj/libstorj/releases/download/v2.0.0-beta",
     "releases": [
       {
         "arch": "arm",
         "platform": "linux",
-        "filename": "libstorj-1.1.0-beta-linux-armv7.tar.gz",
-        "checksum": "4fabbc7fd45d6ca67bcaa0956668451d8d323b4d4c6105b9081b9cbb71c8eaef"
+        "filename": "libstorj-2.0.0-beta-linux-armv7.tar.gz",
+        "checksum": "5aa8c4bada91faf1a62134930618c5d91a2aa952b18725236e57ce43459b9f25"
       },
       {
         "arch": "ia32",
         "platform": "linux",
-        "filename": "libstorj-1.1.0-beta-linux32.tar.gz",
-        "checksum": "1e357a2522c26b11f0ed48a92c6f07567a395bf1924686e1f466f00276d62ac5"
+        "filename": "libstorj-2.0.0-beta-linux32.tar.gz",
+        "checksum": "3a1873a71742ccc44682f4c5000a04aa16cf39183f3753855d6a503fc9c011c5"
       },
       {
         "arch": "x64",
         "platform": "linux",
-        "filename": "libstorj-1.1.0-beta-linux64.tar.gz",
-        "checksum": "6bd53c56a9fd43168417263b88add62229bf70f3d3d7dd222550dc99bbc884d5"
+        "filename": "libstorj-2.0.0-beta-linux64.tar.gz",
+        "checksum": "a4d257dfba81836fc409aedab92f2e35c8c25b1910ef82791501fb251774b1b8"
       },
       {
         "arch": "x64",
         "platform": "darwin",
-        "filename": "libstorj-1.1.0-beta-macos.tar.gz",
-        "checksum": "bbaee4a38566920f69a483da946a1b4173dd4507fb9ba7e2ee1966c0b7e8acca"
+        "filename": "libstorj-2.0.0-beta-macos.tar.gz",
+        "checksum": "1af76726b183437b75e6b77393d5da1cb729a0272b5180f7eb983ec1d9850750n"
       },
       {
         "arch": "ia32",
         "platform": "win32",
-        "filename": "libstorj-1.1.0-beta-win32.zip",
-        "checksum": "c627f21c9913da6795d4c454e5236f8204567810b9680c5372f76d82a173e3da"
+        "filename": "libstorj-2.0.0-beta-win32.zip",
+        "checksum": "b9707e14e5c23e91ebf1d42002e14220912a332d98fa5a655c2806aa34c27b3f"
       },
       {
         "arch": "x64",
         "platform": "win32",
-        "filename": "libstorj-1.1.0-beta-win64.zip",
-        "checksum": "1cb5bbc82d077aa975d4debb490ba38a7cc667f32d93042b67dc9c8b6dfb646a"
+        "filename": "libstorj-2.0.0-beta-win64.zip",
+        "checksum": "4cf5e1a033aa24801000d97e2accdbd04ff13cd7a55a121408a74d6cf01f0993"
       }
     ]
   }
