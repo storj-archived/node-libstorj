@@ -1,6 +1,6 @@
 {
   "name": "storj",
-  "version": "5.0.0-beta",
+  "version": "5.0.0",
   "description": "Node.js library for encrypted file transfer on the Storj network.",
   "main": "index.js",
   "scripts": {
