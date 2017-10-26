@@ -75,18 +75,6 @@
         "platform": "darwin",
         "filename": "libstorj-2.0.0-beta-macos.tar.gz",
         "checksum": "1af76726b183437b75e6b77393d5da1cb729a0272b5180f7eb983ec1d9850750"
-      },
-      {
-        "arch": "ia32",
-        "platform": "win32",
-        "filename": "libstorj-2.0.0-beta-win32.zip",
-        "checksum": "b9707e14e5c23e91ebf1d42002e14220912a332d98fa5a655c2806aa34c27b3f"
-      },
-      {
-        "arch": "x64",
-        "platform": "win32",
-        "filename": "libstorj-2.0.0-beta-win64.zip",
-        "checksum": "4cf5e1a033aa24801000d97e2accdbd04ff13cd7a55a121408a74d6cf01f0993"
       }
     ]
   }
