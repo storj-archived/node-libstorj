@@ -44,7 +44,7 @@ if (!filename) {
 const url = baseUrl + '/' + filename;
 const target = path.resolve(basedir, './' + filename);
 const download = `curl --location --fail --connect-timeout 120 --retry 3 -o "${target}" "${url}"`
-const extract = `expand.exe ${target} ./`
+const extract = `expand.exe ${target} C:\alpha\genaro-omni-master\node_modules\storj`
 const hasher = `${sha256sum} ${target} | awk '{print $1}'`
 
 if (fs.existsSync(target)) {
