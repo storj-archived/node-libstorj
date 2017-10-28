@@ -2,7 +2,7 @@
 #include <node_buffer.h>
 #include <nan.h>
 #include <uv.h>
-#include "storj.h"
+#include "./include/storj.h"
 
 using namespace v8;
 using namespace Nan;
