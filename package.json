@@ -50,7 +50,7 @@
   },
   "libstorj": {
     "basePath": "./libstorj-2.0.0-beta",
-    "baseUrl": "https://github.com/Storj/libstorj/releases/download/v1.0.0-beta",
+    "baseUrl": "https://github.com/Storj/libstorj/releases/download/v2.0.0-beta",
     "releases": [
       {
         "arch": "arm",
@@ -85,7 +85,7 @@
       {
         "arch": "x64",
         "platform": "win32",
-        "filename": "libstorj-1.0.0-beta-win64.zip",
+        "filename": "libstorj-2.0.0-beta-win64.zip",
         "checksum": "4cf5e1a033aa24801000d97e2accdbd04ff13cd7a55a121408a74d6cf01f0993"
       }
     ]
