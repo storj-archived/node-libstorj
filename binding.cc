@@ -711,6 +711,61 @@ void DeleteFile(const Nan::FunctionCallbackInfo<Value>& args) {
     storj_bridge_delete_file(env, bucket_id_dup, file_id_dup, (void *) callback, DeleteFileCallback);
 }
 
+void RegisterCallback(uv_work_t *work_req, int status) {
+    Nan::HandleScope scope;
+
+    json_request_t *req = (json_request_t *) work_req->data;
+
+    Nan::Callback *callback = (Nan::Callback*)req->handle;
+    
+    v8::Local<v8::Value> error = Nan::Null();
+    v8::Local<Value> result = Nan::Null();
+
+    if (error_and_status_check<json_request_t>(req, &error)) {
+        const char *result_str = json_object_to_json_string(req->response);
+        v8::Local<v8::String> result_json_string = Nan::New(result_str).ToLocalChecked();
+        Nan::JSON NanJSON;
+        Nan::MaybeLocal<v8::Value> res = NanJSON.Parse(result_json_string);
+        if (!res.IsEmpty()) {
+            result = res.ToLocalChecked();
+        }
+    }
+
+    Local<Value> argv[] = {
+        error,
+        result
+    };
+
+    callback->Call(2, argv);
+    free(req);
+    free(work_req);
+}
+
+void Register(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.Length() != 3 || !args[2]->IsFunction()) {
+        return Nan::ThrowError("3 arguments expected and the third argument is expected to be a function");
+    }
+    if (args.This()->InternalFieldCount() != 1) {
+        return Nan::ThrowError("Environment not available for instance");
+    }
+    storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+    if (!env) {
+        return Nan::ThrowError("Environment is not initialized");
+    }
+
+    String::Utf8Value str_email(args[0]);
+    const char *email = *str_email;
+    const char *email_dup = strdup(email);
+
+    String::Utf8Value str_passwd(args[1]);
+    const char *passwd = *str_passwd;
+    const char *passwd_dup = strdup(passwd);
+
+    Nan::Callback *callback = new Nan::Callback(args[2].As<Function>());
+
+    storj_bridge_register(env, email_dup, passwd_dup, (void *) callback, RegisterCallback);
+}
+
 void DestroyEnvironment(const Nan::FunctionCallbackInfo<Value>& args) {
     if (args.This()->InternalFieldCount() != 1) {
         return Nan::ThrowError("Environment not available for instance");
@@ -768,6 +823,7 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::SetPrototypeMethod(constructor, "resolveFileCancel", ResolveFileCancel);
     Nan::SetPrototypeMethod(constructor, "deleteFile", DeleteFile);
     Nan::SetPrototypeMethod(constructor, "destroy", DestroyEnvironment);
+    Nan::SetPrototypeMethod(constructor, "register", Register);
 
     Nan::MaybeLocal<v8::Object> maybeInstance;
     v8::Local<v8::Object> instance;
