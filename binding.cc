@@ -374,7 +374,7 @@ void DeleteBucket(const Nan::FunctionCallbackInfo<Value>& args) {
     storj_bridge_delete_bucket(env, id_dup, (void *) callback, DeleteBucketCallback);
 }
 
-void StoreFileFinishedCallback(int status, char *file_id, void *handle) {
+void StoreFileFinishedCallback(int status, storj_file_meta_t *file, void *handle) {
     Nan::HandleScope scope;
 
     transfer_callbacks_t *upload_callbacks = (transfer_callbacks_t *) handle;
@@ -382,7 +382,7 @@ void StoreFileFinishedCallback(int status, char *file_id, void *handle) {
 
     Local<Value> file_id_local = Nan::Null();
     if (status == 0) {
-        file_id_local = Nan::New(file_id).ToLocalChecked();
+        file_id_local = Nan::New(file->id).ToLocalChecked();
     }
 
     Local<Value> error = IntToStorjError(status);
@@ -393,8 +393,8 @@ void StoreFileFinishedCallback(int status, char *file_id, void *handle) {
     };
 
     callback->Call(2, argv);
-    if (file_id) {
-        free(file_id);
+    if (file) {
+        storj_free_uploaded_file_info(file);
     }
 }
 

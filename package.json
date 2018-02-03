@@ -1,6 +1,6 @@
 {
   "name": "storj",
-  "version": "5.0.0",
+  "version": "5.1.0",
   "description": "Node.js library for encrypted file transfer on the Storj network.",
   "main": "index.js",
   "scripts": {
@@ -49,32 +49,32 @@
     "mocha": "^3.4.2"
   },
   "libstorj": {
-    "basePath": "./libstorj-2.0.0-beta",
-    "baseUrl": "https://github.com/Storj/libstorj/releases/download/v2.0.0-beta",
+    "basePath": "./libstorj-2.0.0-beta2",
+    "baseUrl": "https://github.com/Storj/libstorj/releases/download/v2.0.0-beta2",
     "releases": [
       {
         "arch": "arm",
         "platform": "linux",
-        "filename": "libstorj-2.0.0-beta-linux-armv7.tar.gz",
-        "checksum": "5aa8c4bada91faf1a62134930618c5d91a2aa952b18725236e57ce43459b9f25"
+        "filename": "libstorj-2.0.0-beta2-linux-armv7.tar.gz",
+        "checksum": "5831f6f1ca5c10a64e731ccbf7e2b139867f5a4423003b4f2b02ae2c138c9249"
       },
       {
         "arch": "ia32",
         "platform": "linux",
-        "filename": "libstorj-2.0.0-beta-linux32.tar.gz",
-        "checksum": "3a1873a71742ccc44682f4c5000a04aa16cf39183f3753855d6a503fc9c011c5"
+        "filename": "libstorj-2.0.0-beta2-linux32.tar.gz",
+        "checksum": "ad9f72c8afe0ea111a6da51680aa5d1d000099ad89a276bfc6d08b88807f0ea2"
       },
       {
         "arch": "x64",
         "platform": "linux",
-        "filename": "libstorj-2.0.0-beta-linux64.tar.gz",
-        "checksum": "a4d257dfba81836fc409aedab92f2e35c8c25b1910ef82791501fb251774b1b8"
+        "filename": "libstorj-2.0.0-beta2-linux64.tar.gz",
+        "checksum": "d34951e420e3d9dd73731f95a4ca781bf3f57019df6a48e0773028bdc1da3b37"
       },
       {
         "arch": "x64",
         "platform": "darwin",
-        "filename": "libstorj-2.0.0-beta-macos.tar.gz",
-        "checksum": "1af76726b183437b75e6b77393d5da1cb729a0272b5180f7eb983ec1d9850750"
+        "filename": "libstorj-2.0.0-beta2-macos.tar.gz",
+        "checksum": "7eb5f7b855696a57d95f486c5415ebc01163289551e6b15531869cdf1339a005"
       }
     ]
   }
