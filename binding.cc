@@ -248,7 +248,9 @@ void ListFilesCallback(uv_work_t *work_req, int status) {
             file->Set(Nan::New("mimetype").ToLocalChecked(), Nan::New(req->files[i].mimetype).ToLocalChecked());
             file->Set(Nan::New("id").ToLocalChecked(), Nan::New(req->files[i].id).ToLocalChecked());
             file->Set(Nan::New("size").ToLocalChecked(), Nan::New((double)(req->files[i].size)));
-            file->Set(Nan::New("created").ToLocalChecked(), StrToDate(req->files[i].created));
+            if (req->files[i].created) {
+                file->Set(Nan::New("created").ToLocalChecked(), StrToDate(req->files[i].created));
+            }
             files_array->Set(i, file);
         }
         files_value = files_array;
