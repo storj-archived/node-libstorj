@@ -27,7 +27,7 @@ const storj = new Environment({
 });
 ```
 
-The `encryptionKey` is a randomly generated with the `mnemonicGenerate` method. The `bridgeUrl`, `bridgeUser` and `bridgePass` are the user credentials for authenticating to a Storj bridge.
+The `encryptionKey` is a randomly generated key used for file encryption, new keys can be randomly generated with the `mnemonicGenerate` method. The `bridgeUrl`, `bridgeUser` and `bridgePass` are the user credentials for authenticating to a Storj bridge.
 
 Upload a file to a bucket:
 ```js
