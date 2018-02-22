@@ -462,8 +462,8 @@ describe('libstorj', function() {
   });
 
   describe('#getBucketId', function() {
-    const bucketName = mockbridgeData.getfileid.name;
-    const bucketId = mockbridgeData.getfileid.id;
+    const bucketName = mockbridgeData.getbucketid.name;
+    const bucketId = mockbridgeData.getbucketid.id;
 
     it('will throw without arguments', function() {
       const env = new libstorj.Environment(defaultConfig);
@@ -481,7 +481,7 @@ describe('libstorj', function() {
       env.destroy();
     });
 
-    it.only('should get a bucket', function(done) {
+    it('should get a bucket', function(done) {
       const env = new libstorj.Environment(defaultConfig);
       env.getBucketId(bucketName, function(err, result) {
         if (err) {
