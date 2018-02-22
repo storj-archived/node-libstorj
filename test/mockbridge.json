@@ -54,6 +54,10 @@
     "id": "0f1810b4bb5b6472352ec486"
   },
   "deletebucket": null,
+  "getbucketid": {
+    "name": "test-bucket",
+    "id": "0f1810b4bb5b6472352ec486"
+  },
   "listfiles": [
     {
       "bucket": "0cf572e48da78e9af943a771",

@@ -461,6 +461,44 @@ describe('libstorj', function() {
     itBehavesLikeAuthenticatedRequest('deleteBucket', [targetBucketId]);
   });
 
+  describe('#getBucketId', function() {
+    const bucketName = mockbridgeData.getfileid.name;
+    const bucketId = mockbridgeData.getfileid.id;
+
+    it('will throw without arguments', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.getBucketId();
+      }).to.throw('Unexpected arguments');
+      env.destroy();
+    });
+
+    it('will throw if callback not a function', function() {
+      const env = new libstorj.Environment(defaultConfig);
+      expect(function() {
+        env.getBucketId('somebucketname', 'notafunction');
+      }).to.throw('Unexpected arguments');
+      env.destroy();
+    });
+
+    it.only('should get a bucket', function(done) {
+      const env = new libstorj.Environment(defaultConfig);
+      env.getBucketId(bucketName, function(err, result) {
+        if (err) {
+          return done(err);
+        }
+
+        expect(result.name).to.equal(bucketName);
+        expect(result.id).to.equal(bucketId);
+        env.destroy();
+        done();
+      });
+    });
+
+    itBehavesLikeCurlRequest('getBucketId', [bucketName]);
+    itBehavesLikeAuthenticatedRequest('getBucketId', [bucketName], true);
+  });
+
   describe('#listFiles', function () {
     it('will throw without arguments', function() {
       const env = new libstorj.Environment(defaultConfig);

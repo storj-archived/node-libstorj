@@ -37,6 +37,11 @@ app.get('/', forceStatus, function(req, res) {
   res.status(200).json(mockbridgeinfo.info);
 });
 
+app.get('*', forceStatus, function(req, res, next) {
+  console.log(req.protocol + '://' + req.get('host') + req.originalUrl);
+  next();
+});
+
 app.get('/buckets', forceStatus, checkAuth, function(req, res) {
   res.status(200).json(mockbridge.getbuckets);
 });
@@ -47,6 +52,11 @@ app.get('/buckets/368be0816766b28fd5f43af5', forceStatus, checkAuth, function(re
 
 app.get('/buckets/368be0816766b28fd5f43af5/files', forceStatus, checkAuth, function(req, res) {
   res.status(200).json(mockbridge.listfiles);
+});
+
+app.get('/bucket-ids/b%2F5phLZPULcgqUEGouGtWztra9Vd+%2FdM2oTDE49VELNSwH6CW%2FQJRCUPae43Hnun%2FGUvEQR+9DzV', forceStatus, checkAuth, function(req, res) {
+  console.log('butts')
+  res.status(200).json(mockbridge.getbucketid);
 });
 
 app.get('/buckets/368be0816766b28fd5f43af5/files/998960317b6725a3f8080c2b/info', forceStatus, checkAuth, function(req, res) {
