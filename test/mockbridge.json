@@ -54,6 +54,11 @@
     "id": "0f1810b4bb5b6472352ec486"
   },
   "deletebucket": null,
+  "getbucketid": {
+    "encryptedname": "g9qacwq2AE1+5nzL/HYyYdY9WoIr+1ueOuVEx6/IzzZKK9sULoKDDdYvhOpavHH2P3xQNw==",
+    "name": "test",
+    "id": "e3eca45f4d294132c07b49f4"
+  },
   "listfiles": [
     {
       "bucket": "0cf572e48da78e9af943a771",

@@ -376,6 +376,54 @@ void DeleteBucket(const Nan::FunctionCallbackInfo<Value>& args) {
     storj_bridge_delete_bucket(env, id_dup, (void *) callback, DeleteBucketCallback);
 }
 
+void GetBucketIdCallback(uv_work_t *work_req, int status) {
+    Nan::HandleScope scope;
+
+    get_bucket_id_request_t *req = (get_bucket_id_request_t *) work_req->data;
+
+    Nan::Callback *callback = (Nan::Callback*)req->handle;
+
+    Local<Value> bucket_value = Nan::Null();
+    Local<Value> error = Nan::Null();
+
+    if (error_and_status_check<get_bucket_id_request_t>(req, &error)) {
+        Local<Object> bucket_object = Nan::To<Object>(Nan::New<Object>()).ToLocalChecked();
+        bucket_object->Set(Nan::New("id").ToLocalChecked(), Nan::New(req->bucket_id).ToLocalChecked());
+        bucket_object->Set(Nan::New("name").ToLocalChecked(), Nan::New(req->bucket_name).ToLocalChecked());
+        bucket_value = bucket_object;
+    }
+
+    Local<Value> argv[] = {
+        error,
+        bucket_value
+    };
+    callback->Call(2, argv);
+    free(req);
+    free(work_req);
+}
+
+void GetBucketId(const Nan::FunctionCallbackInfo<Value>& args) {
+    if (args.Length() != 2 || !args[1]->IsFunction()) {
+        return Nan::ThrowError("Unexpected arguments");
+    }
+    if (args.This()->InternalFieldCount() != 1) {
+        return Nan::ThrowError("Environment not available for instance");
+    }
+
+    storj_env_t *env = (storj_env_t *)args.This()->GetAlignedPointerFromInternalField(0);
+    if (!env) {
+        return Nan::ThrowError("Environment is not initialized");
+    }
+
+    String::Utf8Value str(args[0]);
+    const char *name = *str;
+    const char *name_dup = strdup(name);
+
+    Nan::Callback *callback = new Nan::Callback(args[1].As<Function>());
+
+    storj_bridge_get_bucket_id(env, name_dup, (void *) callback, GetBucketIdCallback);
+}
+
 void StoreFileFinishedCallback(int status, storj_file_meta_t *file, void *handle) {
     Nan::HandleScope scope;
 
@@ -721,7 +769,7 @@ void RegisterCallback(uv_work_t *work_req, int status) {
     json_request_t *req = (json_request_t *) work_req->data;
 
     Nan::Callback *callback = (Nan::Callback*)req->handle;
-    
+
     v8::Local<v8::Value> error = Nan::Null();
     v8::Local<Value> result = Nan::Null();
 
@@ -820,6 +868,7 @@ void Environment(const v8::FunctionCallbackInfo<Value>& args) {
     Nan::SetPrototypeMethod(constructor, "getBuckets", GetBuckets);
     Nan::SetPrototypeMethod(constructor, "createBucket", CreateBucket);
     Nan::SetPrototypeMethod(constructor, "deleteBucket", DeleteBucket);
+    Nan::SetPrototypeMethod(constructor, "getBucketId", GetBucketId);
     Nan::SetPrototypeMethod(constructor, "listFiles", ListFiles);
     Nan::SetPrototypeMethod(constructor, "storeFile", StoreFile);
     Nan::SetPrototypeMethod(constructor, "storeFileCancel", StoreFileCancel);

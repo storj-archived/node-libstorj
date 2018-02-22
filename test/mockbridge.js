@@ -49,6 +49,14 @@ app.get('/buckets/368be0816766b28fd5f43af5/files', forceStatus, checkAuth, funct
   res.status(200).json(mockbridge.listfiles);
 });
 
+app.get('/bucket-ids/:name', forceStatus, checkAuth, function(req, res) {
+  if (req.params.name != mockbridge.getbucketid.encryptedname) {
+    res.sendStatus(400);
+  } else {
+    res.status(200).json(mockbridge.getbucketid);
+  }
+});
+
 app.get('/buckets/368be0816766b28fd5f43af5/files/998960317b6725a3f8080c2b/info', forceStatus, checkAuth, function(req, res) {
   res.status(200).json(mockbridge.getfileinfo);
 });

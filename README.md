@@ -90,6 +90,7 @@ Methods available on an instance of `Environment`:
 - `.getBuckets(function(err, result) {})` - Gets list of available buckets
 - `.createBucket(bucketName, function(err, result) {})` - Creates a bucket
 - `.deleteBucket(bucketId, function(err, result) {})` - Deletes a bucket
+- `.getBucketId(bucketName, function(err, result) {})` - Gets a bucket id by name
 - `.listFiles(bucketId, function(err, result) {})` - List files in a bucket
 - `.storeFile(bucketId, filePath, options)` - Uploads a file, returns state object
 - `.storeFileCancel(state)` - This will cancel an upload
