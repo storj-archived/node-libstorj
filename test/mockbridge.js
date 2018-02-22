@@ -49,7 +49,7 @@ app.get('/buckets/368be0816766b28fd5f43af5/files', forceStatus, checkAuth, funct
   res.status(200).json(mockbridge.listfiles);
 });
 
-app.get('/bucket-ids/:name', forceStatus, function(req, res) {
+app.get('/bucket-ids/:name', forceStatus, checkAuth, function(req, res) {
   res.status(200).json(mockbridge.getbucketid);
 });
 
