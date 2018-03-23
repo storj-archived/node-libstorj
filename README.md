@@ -2,6 +2,7 @@
 
 [![Storj.io](https://storj.io/img/storj-badge.svg)](https://storj.io)
 [![Build Status](https://travis-ci.org/Storj/node-libstorj.svg?branch=master)](https://travis-ci.org/Storj/node-libstorj)
+[![npm version](https://badge.fury.io/js/storj.svg)](https://badge.fury.io/js/storj)
 
 Node.js library for encrypted file transfer on the Storj network via bindings to [libstorj](https://github.com/Storj/libstorj).
 
